@@ -1,0 +1,179 @@
+2021-11-03 01:00:03: Expanded 'file:///%GSDISK%/InvestmentResearch/backtest' to 'file:///C:/InvestmentResearch/backtest'
+2021-11-03 01:00:03: -- 分析开始 On Schedule Min=0 Hour=1 
+2021-11-03 01:00:03: 左侧: State file does not exist: C:/InvestmentResearch/backtest/_gsdata_/_file_state_v4._gs
+2021-11-03 01:00:03: 变更：172， 冲突：0， 复制时间：0， 复制状态：124， 错误： 0, All: 297
+2021-11-03 01:00:03: Left to Right: Copy File: 158 Delete File: 14 
+2021-11-03 01:00:03: == 同步开始由 On Schedule Min=0 Hour=1 
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/.COMMIT_EDITMSG.swp
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/FETCH_HEAD
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/objects/0f/8787e98f873bb6e374a42e70d4035c4d401318
+2021-11-03 01:00:03: 删除文件夹 D:/haoyu_backup/backtest/.git/objects/0f
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/objects/1c/8d5ede53a9d7f9781427ea0df5800aa12d0159
+2021-11-03 01:00:03: 删除文件夹 D:/haoyu_backup/backtest/.git/objects/1c
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/objects/1d/d002fe2acaf27aa08ef051df707224f8655638
+2021-11-03 01:00:03: 删除文件夹 D:/haoyu_backup/backtest/.git/objects/1d
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/objects/35/cae1d28f0b466b59fb52e392920f55cba1f5ef
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/objects/71/58c9d952fbb5d45f5c3588b7da327718272e19
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/objects/9d/d424da4054c54f0c0e5dc4a5ea3feebd2170ea
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/.git/objects/e9/385eab0a0b509e774851761249110592a35ac8
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/LICENSE
+2021-11-03 01:00:03: 删除文件 D:/haoyu_backup/backtest/README
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/logs/refs/remotes
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/logs/refs/remotes/origin
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/06
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/07
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/0a
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/12
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/1a
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/1b
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/36
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/37
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/39
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/3b
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/40
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/48
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/4b
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/51
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/5c
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/61
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/65
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/68
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/74
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/7f
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/88
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/8f
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/a5
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/b1
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/bd
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/cb
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/d8
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/da
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/e1
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/e3
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/ec
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/f1
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/fa
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/fb
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/objects/fd
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/refs/remotes
+2021-11-03 01:00:03: 创建文件夹 D:/haoyu_backup/backtest/.git/refs/remotes/origin
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/description' -> 'D:/haoyu_backup/backtest/.git/description' (73)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/GITGUI_MSG' -> 'D:/haoyu_backup/backtest/.git/GITGUI_MSG' (42)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/config' -> 'D:/haoyu_backup/backtest/.git/config' (676)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/COMMIT_EDITMSG' -> 'D:/haoyu_backup/backtest/.git/COMMIT_EDITMSG' (18)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/HEAD' -> 'D:/haoyu_backup/backtest/.git/HEAD' (23)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/applypatch-msg.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/applypatch-msg.sample' (478)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/commit-msg.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/commit-msg.sample' (896)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/fsmonitor-watchman.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/fsmonitor-watchman.sample' (4,655)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/pre-commit.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/pre-commit.sample' (1,643)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/post-update.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/post-update.sample' (189)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/pre-applypatch.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/pre-applypatch.sample' (424)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/pre-merge-commit.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/pre-merge-commit.sample' (416)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/pre-push.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/pre-push.sample' (1,374)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/pre-rebase.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/pre-rebase.sample' (4,898)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/pre-receive.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/pre-receive.sample' (544)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/prepare-commit-msg.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/prepare-commit-msg.sample' (1,492)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/push-to-checkout.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/push-to-checkout.sample' (2,783)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/hooks/update.sample' -> 'D:/haoyu_backup/backtest/.git/hooks/update.sample' (3,650)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/info/exclude' -> 'D:/haoyu_backup/backtest/.git/info/exclude' (240)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/index' -> 'D:/haoyu_backup/backtest/.git/index' (6,285)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/logs/HEAD' -> 'D:/haoyu_backup/backtest/.git/logs/HEAD' (2,273)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/logs/refs/heads/master' -> 'D:/haoyu_backup/backtest/.git/logs/refs/heads/master' (2,091)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/logs/refs/remotes/origin/master' -> 'D:/haoyu_backup/backtest/.git/logs/refs/remotes/origin/master' (142)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/01/6b5ced754f4e9a458a6d51134413dafedf8ac2' -> 'D:/haoyu_backup/backtest/.git/objects/01/6b5ced754f4e9a458a6d51134413dafedf8ac2' (1,656)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/01/01d5a1c74d56b0db11a43e40306436565e5abc' -> 'D:/haoyu_backup/backtest/.git/objects/01/01d5a1c74d56b0db11a43e40306436565e5abc' (2,860)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/03/f4f960597eb1786d23db40669c8868e29ebea3' -> 'D:/haoyu_backup/backtest/.git/objects/03/f4f960597eb1786d23db40669c8868e29ebea3' (199)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/06/a9b4480e2ab3d782e37ebfe96188a24c22a4f2' -> 'D:/haoyu_backup/backtest/.git/objects/06/a9b4480e2ab3d782e37ebfe96188a24c22a4f2' (949)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/07/14a53b92473640674b517fc88867816facc955' -> 'D:/haoyu_backup/backtest/.git/objects/07/14a53b92473640674b517fc88867816facc955' (688)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/09/2bfd07b030d9a22604f86e9cc7dc83aecdc3e1' -> 'D:/haoyu_backup/backtest/.git/objects/09/2bfd07b030d9a22604f86e9cc7dc83aecdc3e1' (1,354)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/0a/d3ae676b08cb938e23a4b3500c591209d5dd6b' -> 'D:/haoyu_backup/backtest/.git/objects/0a/d3ae676b08cb938e23a4b3500c591209d5dd6b' (988)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/12/f88ec4c8e24ee93a02ffaec3eb69a75669f20e' -> 'D:/haoyu_backup/backtest/.git/objects/12/f88ec4c8e24ee93a02ffaec3eb69a75669f20e' (4,495)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/1b/48ee72ccc7e82a3e33cbfb97b548b1360d972d' -> 'D:/haoyu_backup/backtest/.git/objects/1b/48ee72ccc7e82a3e33cbfb97b548b1360d972d' (5,239)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/17/12ce099c1ed9bb195f170411ea991a83ff0488' -> 'D:/haoyu_backup/backtest/.git/objects/17/12ce099c1ed9bb195f170411ea991a83ff0488' (2,117)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/1a/4380358cc6fad7dd41ee91d51603b1847216f1' -> 'D:/haoyu_backup/backtest/.git/objects/1a/4380358cc6fad7dd41ee91d51603b1847216f1' (115)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/32/d82b9c91da655ba45c2a78a2d056f880aec64e' -> 'D:/haoyu_backup/backtest/.git/objects/32/d82b9c91da655ba45c2a78a2d056f880aec64e' (5,224)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/2d/529e68668b2b64bc10a4a48b5dbae02d1e2d1d' -> 'D:/haoyu_backup/backtest/.git/objects/2d/529e68668b2b64bc10a4a48b5dbae02d1e2d1d' (3,666)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/34/2a626241388115dd552a3c1ba12973efae5319' -> 'D:/haoyu_backup/backtest/.git/objects/34/2a626241388115dd552a3c1ba12973efae5319' (167)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/35/dc477e88eb2dd0c8a03cc8891eee1d2a0fcf36' -> 'D:/haoyu_backup/backtest/.git/objects/35/dc477e88eb2dd0c8a03cc8891eee1d2a0fcf36' (681)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/34/be16025eb318212998b43e66ab313db934ce41' -> 'D:/haoyu_backup/backtest/.git/objects/34/be16025eb318212998b43e66ab313db934ce41' (2,543)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/36/1b955a8de58effc86de70d52ded8e5fc385090' -> 'D:/haoyu_backup/backtest/.git/objects/36/1b955a8de58effc86de70d52ded8e5fc385090' (662)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/38/e41a79548c89c40281f38165d4a9ba3735033e' -> 'D:/haoyu_backup/backtest/.git/objects/38/e41a79548c89c40281f38165d4a9ba3735033e' (174)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/37/bb50c894ef68424792985d65378f4bbef17a37' -> 'D:/haoyu_backup/backtest/.git/objects/37/bb50c894ef68424792985d65378f4bbef17a37' (74)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/3b/221ce1eabb056b50cc0f4cc40506ea72d7b602' -> 'D:/haoyu_backup/backtest/.git/objects/3b/221ce1eabb056b50cc0f4cc40506ea72d7b602' (4,399)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/39/b17ff43ea7b3341eceaf0842a5e1a7f837e386' -> 'D:/haoyu_backup/backtest/.git/objects/39/b17ff43ea7b3341eceaf0842a5e1a7f837e386' (188)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/3c/90650d5ba0aaf3da559c9d16b4eb7bad9e956d' -> 'D:/haoyu_backup/backtest/.git/objects/3c/90650d5ba0aaf3da559c9d16b4eb7bad9e956d' (669)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/45/f059f96ed30089916018ae5025de1f7c9a201a' -> 'D:/haoyu_backup/backtest/.git/objects/45/f059f96ed30089916018ae5025de1f7c9a201a' (192)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/40/cc8fea8e58c876496a2ae713e1d367dfcc8fc4' -> 'D:/haoyu_backup/backtest/.git/objects/40/cc8fea8e58c876496a2ae713e1d367dfcc8fc4' (691)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/47/173d2c8ce8a6cb670f4ba7d65e87c6545818c6' -> 'D:/haoyu_backup/backtest/.git/objects/47/173d2c8ce8a6cb670f4ba7d65e87c6545818c6' (3,208)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/48/6be9a926283a07cc2155a59932919f2e73e135' -> 'D:/haoyu_backup/backtest/.git/objects/48/6be9a926283a07cc2155a59932919f2e73e135' (1,897)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/4b/825dc642cb6eb9a060e54bf8d69288fbee4904' -> 'D:/haoyu_backup/backtest/.git/objects/4b/825dc642cb6eb9a060e54bf8d69288fbee4904' (15)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/4c/aa388936d76f78679b6659ea13a3e2204d71e7' -> 'D:/haoyu_backup/backtest/.git/objects/4c/aa388936d76f78679b6659ea13a3e2204d71e7' (1,480)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/61/35cbe507412c8dda904c6059ba3060c3a2da36' -> 'D:/haoyu_backup/backtest/.git/objects/61/35cbe507412c8dda904c6059ba3060c3a2da36' (348)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/65/7202d18ab1bb6130bea95bfcb598158d3fafd6' -> 'D:/haoyu_backup/backtest/.git/objects/65/7202d18ab1bb6130bea95bfcb598158d3fafd6' (2,842)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/51/4d8a10327a33bbd5bcd4961972334dd9c3efd6' -> 'D:/haoyu_backup/backtest/.git/objects/51/4d8a10327a33bbd5bcd4961972334dd9c3efd6' (657)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/5c/1798b55143a69b93feb4916813273b77db454e' -> 'D:/haoyu_backup/backtest/.git/objects/5c/1798b55143a69b93feb4916813273b77db454e' (89)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/6a/f230c0237220040dbfd03cc7b5c9d06e370b27' -> 'D:/haoyu_backup/backtest/.git/objects/6a/f230c0237220040dbfd03cc7b5c9d06e370b27' (167)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/65/c6eab3ff952c450558ce45655e218217b3a1b7' -> 'D:/haoyu_backup/backtest/.git/objects/65/c6eab3ff952c450558ce45655e218217b3a1b7' (160)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/68/d880659dff532bf3cdcd323b06ce082264a55d' -> 'D:/haoyu_backup/backtest/.git/objects/68/d880659dff532bf3cdcd323b06ce082264a55d' (657)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/6b/4cc70b2ad4343c1f2528202df2d0b67a7e6de6' -> 'D:/haoyu_backup/backtest/.git/objects/6b/4cc70b2ad4343c1f2528202df2d0b67a7e6de6' (193)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/71/2f4ed58d8e47b5379a9d0c2da760adc1957f50' -> 'D:/haoyu_backup/backtest/.git/objects/71/2f4ed58d8e47b5379a9d0c2da760adc1957f50' (1,920)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/6e/c461c03b8e4c527cc5044e3cef0db5b29830b2' -> 'D:/haoyu_backup/backtest/.git/objects/6e/c461c03b8e4c527cc5044e3cef0db5b29830b2' (97)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/71/fae04b06833290896b75add2ce662d4d8649f7' -> 'D:/haoyu_backup/backtest/.git/objects/71/fae04b06833290896b75add2ce662d4d8649f7' (1,585)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/74/d02efea2e3f8cdc96e065c8f64dfae4f8b1fd4' -> 'D:/haoyu_backup/backtest/.git/objects/74/d02efea2e3f8cdc96e065c8f64dfae4f8b1fd4' (1,824)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/74/8752f77e65d1401fe2a1e8d1aa4cb802cab642' -> 'D:/haoyu_backup/backtest/.git/objects/74/8752f77e65d1401fe2a1e8d1aa4cb802cab642' (94)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/7a/fbb4ae874775de2156e7839a4c85ebf66f94bd' -> 'D:/haoyu_backup/backtest/.git/objects/7a/fbb4ae874775de2156e7839a4c85ebf66f94bd' (2,528)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/85/6d0b809298c104bc8e532c09065c1518a74e2c' -> 'D:/haoyu_backup/backtest/.git/objects/85/6d0b809298c104bc8e532c09065c1518a74e2c' (235)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/7f/4f542659ded342b1b73dc8a12b224b902f3f25' -> 'D:/haoyu_backup/backtest/.git/objects/7f/4f542659ded342b1b73dc8a12b224b902f3f25' (657)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/88/1c60fbeaa220d8cb3823f238d747c763fb3d1f' -> 'D:/haoyu_backup/backtest/.git/objects/88/1c60fbeaa220d8cb3823f238d747c763fb3d1f' (2,286)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/8f/53e4bd2652c266efb3fd1a729c38d8dd3032cf' -> 'D:/haoyu_backup/backtest/.git/objects/8f/53e4bd2652c266efb3fd1a729c38d8dd3032cf' (158)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/8f/b1f37bf192bce4c4260eb4a34907a1609a9645' -> 'D:/haoyu_backup/backtest/.git/objects/8f/b1f37bf192bce4c4260eb4a34907a1609a9645' (3,725)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/9d/98a9e029291ece97472c71e684a29665dd1b60' -> 'D:/haoyu_backup/backtest/.git/objects/9d/98a9e029291ece97472c71e684a29665dd1b60' (258)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/95/23d6b4ad5b19a800c32b5f0773f4b7fdab21f2' -> 'D:/haoyu_backup/backtest/.git/objects/95/23d6b4ad5b19a800c32b5f0773f4b7fdab21f2' (6,136)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/9e/1ad1448daa32244ae5baceb2f9f47090095805' -> 'D:/haoyu_backup/backtest/.git/objects/9e/1ad1448daa32244ae5baceb2f9f47090095805' (201)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/a5/c241c60425622357db55fa882e47d76702bf57' -> 'D:/haoyu_backup/backtest/.git/objects/a5/c241c60425622357db55fa882e47d76702bf57' (188)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/a1/f19892926ef69b0a4f024753a2f5a29137328d' -> 'D:/haoyu_backup/backtest/.git/objects/a1/f19892926ef69b0a4f024753a2f5a29137328d' (104)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/ab/d1fa93de2abfe4e4af1edafcaf1fcb19d5a147' -> 'D:/haoyu_backup/backtest/.git/objects/ab/d1fa93de2abfe4e4af1edafcaf1fcb19d5a147' (8,452)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/aa/a1e15a9acf2b86a2b57fc8e362a34f82738ae5' -> 'D:/haoyu_backup/backtest/.git/objects/aa/a1e15a9acf2b86a2b57fc8e362a34f82738ae5' (97)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/ab/e6df3a292808f419cc93ff39882aecd7024211' -> 'D:/haoyu_backup/backtest/.git/objects/ab/e6df3a292808f419cc93ff39882aecd7024211' (2,848)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/a5/f2b8c6e1aa20994fe2b6258226ddd56fdab343' -> 'D:/haoyu_backup/backtest/.git/objects/a5/f2b8c6e1aa20994fe2b6258226ddd56fdab343' (121)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/ab/fcb11c9bf9534a8c53a5d7cec0c4d59ba6334e' -> 'D:/haoyu_backup/backtest/.git/objects/ab/fcb11c9bf9534a8c53a5d7cec0c4d59ba6334e' (1,415)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/ac/e6354b9ca6b6f67cbf20a3577d19e02420ac9f' -> 'D:/haoyu_backup/backtest/.git/objects/ac/e6354b9ca6b6f67cbf20a3577d19e02420ac9f' (196)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/b1/b823567f042b8fb317144963ce4ac16e93b97e' -> 'D:/haoyu_backup/backtest/.git/objects/b1/b823567f042b8fb317144963ce4ac16e93b97e' (6,040)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/ad/11eba7ebf65030442482a68d3b8773972f4dfc' -> 'D:/haoyu_backup/backtest/.git/objects/ad/11eba7ebf65030442482a68d3b8773972f4dfc' (731)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/bd/b7d1df514838259a6d84249d92173f7a6c8b07' -> 'D:/haoyu_backup/backtest/.git/objects/bd/b7d1df514838259a6d84249d92173f7a6c8b07' (5,775)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/b4/7bddea693ee26eb0aaf8590468796e07239f0e' -> 'D:/haoyu_backup/backtest/.git/objects/b4/7bddea693ee26eb0aaf8590468796e07239f0e' (2,786)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/c4/b9cc1955b84f35a3089adf5266d06c76ae407b' -> 'D:/haoyu_backup/backtest/.git/objects/c4/b9cc1955b84f35a3089adf5266d06c76ae407b' (4,071)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/c5/6badc32d94d5f3eae8c9592d9934315d1ce4bf' -> 'D:/haoyu_backup/backtest/.git/objects/c5/6badc32d94d5f3eae8c9592d9934315d1ce4bf' (3,211)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/c7/1ffec907daec445725ce4c1694f3c44c445609' -> 'D:/haoyu_backup/backtest/.git/objects/c7/1ffec907daec445725ce4c1694f3c44c445609' (241)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/c9/957c513eb54835d1ae2c655a143d4f2c0c5973' -> 'D:/haoyu_backup/backtest/.git/objects/c9/957c513eb54835d1ae2c655a143d4f2c0c5973' (149)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/c9/a30e3317eb2cc939dede63b8b04c78a0266349' -> 'D:/haoyu_backup/backtest/.git/objects/c9/a30e3317eb2cc939dede63b8b04c78a0266349' (126)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/ca/11a9144c064b667a76382e49ea08703946710c' -> 'D:/haoyu_backup/backtest/.git/objects/ca/11a9144c064b667a76382e49ea08703946710c' (3,335)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/ca/d3a6c59319cc59c5cfb241445decf4360ddaee' -> 'D:/haoyu_backup/backtest/.git/objects/ca/d3a6c59319cc59c5cfb241445decf4360ddaee' (136)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/d2/d531ebf1d74ad971da40f0dbbd34d1afe95339' -> 'D:/haoyu_backup/backtest/.git/objects/d2/d531ebf1d74ad971da40f0dbbd34d1afe95339' (97)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/cb/f2bca7a29750fc3b43d3ed377ceac929c92ab3' -> 'D:/haoyu_backup/backtest/.git/objects/cb/f2bca7a29750fc3b43d3ed377ceac929c92ab3' (177)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/d4/63fef40242460977064e0ddc967811192da4d0' -> 'D:/haoyu_backup/backtest/.git/objects/d4/63fef40242460977064e0ddc967811192da4d0' (1,349)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/d4/fb7bf9916dca506c1a99bcde2da8e692175140' -> 'D:/haoyu_backup/backtest/.git/objects/d4/fb7bf9916dca506c1a99bcde2da8e692175140' (160)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/d5/d6ff61dbe6d4cdc176dcae9a2225d7c2b21a67' -> 'D:/haoyu_backup/backtest/.git/objects/d5/d6ff61dbe6d4cdc176dcae9a2225d7c2b21a67' (2,403)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/da/2e4ef4ce7116fb395b38ff1e0db0bc095952ac' -> 'D:/haoyu_backup/backtest/.git/objects/da/2e4ef4ce7116fb395b38ff1e0db0bc095952ac' (265)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/d8/fc4d113a25ba6f32744a09da30edf975c3fada' -> 'D:/haoyu_backup/backtest/.git/objects/d8/fc4d113a25ba6f32744a09da30edf975c3fada' (107)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/dc/394894a5bce3e472ee92419ae78ab04cb42ae5' -> 'D:/haoyu_backup/backtest/.git/objects/dc/394894a5bce3e472ee92419ae78ab04cb42ae5' (562)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/de/d065452751b7e9aaa19b8f6451821e9530912e' -> 'D:/haoyu_backup/backtest/.git/objects/de/d065452751b7e9aaa19b8f6451821e9530912e' (11,978)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/df/f540ac0a88498707b90d6104d96063cb22a4bc' -> 'D:/haoyu_backup/backtest/.git/objects/df/f540ac0a88498707b90d6104d96063cb22a4bc' (3,762)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/e2/8e875f47ae939351212120582dd6487df235a4' -> 'D:/haoyu_backup/backtest/.git/objects/e2/8e875f47ae939351212120582dd6487df235a4' (12,888)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/e2/a36bcb9096684c1344112b2c1ab9d2c67c8b19' -> 'D:/haoyu_backup/backtest/.git/objects/e2/a36bcb9096684c1344112b2c1ab9d2c67c8b19' (3,994)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/e1/68299dac7df5ea55361fd528082042615b93d8' -> 'D:/haoyu_backup/backtest/.git/objects/e1/68299dac7df5ea55361fd528082042615b93d8' (690)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/e6/9de29bb2d1d6434b8b29ae775ad8c2e48c5391' -> 'D:/haoyu_backup/backtest/.git/objects/e6/9de29bb2d1d6434b8b29ae775ad8c2e48c5391' (15)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/e3/186be1fdb33692e1dbecce61b468e84cb8aaa6' -> 'D:/haoyu_backup/backtest/.git/objects/e3/186be1fdb33692e1dbecce61b468e84cb8aaa6' (690)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/e7/5852d67b67df8d365c81d9cdbb89026f73223d' -> 'D:/haoyu_backup/backtest/.git/objects/e7/5852d67b67df8d365c81d9cdbb89026f73223d' (203)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/ec/b399a6b51f8dffbf5d589e8c22be54e8e5ee9f' -> 'D:/haoyu_backup/backtest/.git/objects/ec/b399a6b51f8dffbf5d589e8c22be54e8e5ee9f' (4,167)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/f1/dd7de8edce67fb57e096eb9808628a7b91aefa' -> 'D:/haoyu_backup/backtest/.git/objects/f1/dd7de8edce67fb57e096eb9808628a7b91aefa' (1,960)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/fa/6b07cd59ec61ee336f42a0a2795299d83851b1' -> 'D:/haoyu_backup/backtest/.git/objects/fa/6b07cd59ec61ee336f42a0a2795299d83851b1' (1,266)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/e9/77e935bd411b1b3a6cdc6a18dc9531dcf37266' -> 'D:/haoyu_backup/backtest/.git/objects/e9/77e935bd411b1b3a6cdc6a18dc9531dcf37266' (160)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/fb/5b2448da83db114481ca746e939056a56a5197' -> 'D:/haoyu_backup/backtest/.git/objects/fb/5b2448da83db114481ca746e939056a56a5197' (170)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/objects/fe/80c113a46331727dfa804c125ad565ba64f8ea' -> 'D:/haoyu_backup/backtest/.git/objects/fe/80c113a46331727dfa804c125ad565ba64f8ea' (631)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/objects/fd/53c150eb2fb13ca82c813cc35d57a457fc3cd6' -> 'D:/haoyu_backup/backtest/.git/objects/fd/53c150eb2fb13ca82c813cc35d57a457fc3cd6' (163)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/ORIG_HEAD' -> 'D:/haoyu_backup/backtest/.git/ORIG_HEAD' (41)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/README.txt' -> 'D:/haoyu_backup/backtest/README.txt' (159)
+2021-11-03 01:00:03: 新建复制 'C:/InvestmentResearch/backtest/.git/refs/remotes/origin/master' -> 'D:/haoyu_backup/backtest/.git/refs/remotes/origin/master' (41)
+2021-11-03 01:00:03: 覆盖复制 'C:/InvestmentResearch/backtest/.git/refs/heads/master' -> 'D:/haoyu_backup/backtest/.git/refs/heads/master' (41)
+2021-11-03 01:00:03: == 同步完成. 历时: 00:00:00, 速度: 0.00/s, 完成: 296, 错误: 0
