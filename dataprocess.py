@@ -90,6 +90,32 @@ def get_stocks_pool_standard(df_close, df_st, df_floatmktcap, df_dateIPO, str_in
     return df_stock_pool
 
 
+# 标准化可转债池操作
+def get_cbs_pool_standard(df_amount_stock, df_amount_cb, df_ticker_cb):
+    '''
+    可转债池标准：
+    1, 认定标准为，转债与正股同为可交易状态；转债从起始日至截止日，可交易状态为一条连续的线，中间停牌不影响可交易状态的认定
+    2, 起始日为 正股/转债 成交量>0 的起始日中最大的那个（股债均进入交易状态）
+    4, 终止日为 正股/转债 成交量>0 的最后一日中最小的那个，且不晚于强赎预告发布日（股债中至少有一个退出交易状态）
+    '''
+    
+    tmp_df_cb_pool = pd.DataFrame(index=df_amount_cb.index)
+    for u in df_amount_cb.columns:
+        tmp_df_amount_stock = df_amount_stock[df_ticker_cb.loc[u,  'StockTicker']]
+        tmp_df_amount_stock = tmp_df_amount_stock[tmp_df_amount_stock>0]
+        tmp_df_amount_cb    = df_amount_cb[u][df_amount_cb[u]>0]
+        if len(tmp_df_amount_stock) <=0 or len(tmp_df_amount_cb) <= 0:
+            tmp_df_trade_cycle = pd.DataFrame(columns=[u])
+        else:
+            tmp_date_start  = max(min(tmp_df_amount_stock.index), min(tmp_df_amount_cb.index))
+            tmp_date_end    = min(max(tmp_df_amount_stock.index), max(tmp_df_amount_cb.index), 
+                                  df_ticker_cb.loc[u, ['DateRedeemNotice', 'InterestDateEnd']].min())
+            tmp_df_trade_cycle = df_amount_cb[[u]].loc[tmp_date_start:tmp_date_end].applymap(lambda x:1)
+        tmp_df_cb_pool = pd.concat([tmp_df_cb_pool, tmp_df_trade_cycle], axis=1).fillna(0)
+    
+    return tmp_df_cb_pool
+
+
 # 分数转化：将股票池中所选股票的分值按照特定方法处理
 def rescale_score(method, df_stocksPool, df_scores):
     ''' 分数转化：将股票池中所选股票的分值按照特定方法处理 '''
