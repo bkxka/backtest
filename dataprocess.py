@@ -96,13 +96,13 @@ def get_cbs_pool_standard(df_amount_stock, df_amount_cb, df_ticker_cb):
     可转债池标准：
     1, 认定标准为，转债与正股同为可交易状态；转债从起始日至截止日，可交易状态为一条连续的线，中间停牌不影响可交易状态的认定
     2, 起始日为 正股/转债 成交量>0 的起始日中最大的那个（股债均进入交易状态）
-    4, 终止日为 正股/转债 成交量>0 的最后一日中最小的那个，且不晚于强赎预告发布日（股债中至少有一个退出交易状态）
+    3, 终止日为 正股/转债 成交量>0 的最后一日中最小的那个，且不晚于强赎预告发布日（股债中至少有一个退出交易状态）
+    4, 所有指标的列名都是可转债代码
     '''
     
     tmp_df_cb_pool = pd.DataFrame(index=df_amount_cb.index)
     for u in df_amount_cb.columns:
-        tmp_df_amount_stock = df_amount_stock[df_ticker_cb.loc[u,  'StockTicker']]
-        tmp_df_amount_stock = tmp_df_amount_stock[tmp_df_amount_stock>0]
+        tmp_df_amount_stock = df_amount_stock[u][df_amount_stock[u]>0]
         tmp_df_amount_cb    = df_amount_cb[u][df_amount_cb[u]>0]
         if len(tmp_df_amount_stock) <=0 or len(tmp_df_amount_cb) <= 0:
             tmp_df_trade_cycle = pd.DataFrame(columns=[u])
