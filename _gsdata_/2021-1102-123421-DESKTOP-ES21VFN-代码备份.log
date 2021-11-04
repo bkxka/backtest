@@ -1,6 +1,0 @@
-2021-11-02 12:34:21: Expanded 'file:///%GSDISK%/InvestmentResearch/backtest' to 'file:///C:/InvestmentResearch/backtest'
-2021-11-02 12:34:21: -- 分析开始 User Command
-2021-11-02 12:34:21: 左侧: State file does not exist: C:/InvestmentResearch/backtest/_gsdata_/_file_state_v4._gs
-2021-11-02 12:34:21: 变更：136， 冲突：0， 复制时间：0， 复制状态：70， 错误： 0, All: 207
-2021-11-02 12:34:21: Left to Right: Delete File: 136 
-2021-11-02 12:34:21: -- 分析已结束。历时 00:00:00, 速度： Many 文件/秒
