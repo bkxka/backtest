@@ -152,20 +152,27 @@ def analysis_bias_cx(data_df_orders_cx_ah, data_df_delivery_cx_ah):
 
 
 # 比较回测与实盘交易的净值曲线
-def analysis_netvalue_cx(df_netvalue_backtest, data_df_price, aly_df_bias_trade_cx, data_df_orders_cx, data_df_delivery_cx, df_index):
-    ''' 比较回测与实盘交易的净值曲线 '''
-    
-    data_list_dates = list(sorted(list(set(data_df_orders_cx['date']))))
-    data_list_tickers = list(set(data_df_orders_cx['ticker']))
+def analysis_netvalue_cx(df_netvalue_backtest, data_df_price, aly_df_bias_trade_cx, data_df_orders_cx, data_df_delivery_cx, df_index, 
+                         range_period=(datetime(2001,1,1), datetime(2050,1,1))):
+    ''' 
+    比较回测与实盘交易的净值曲线
+    新增一个默认参数range_period，限定比较的时间区间；默认参数区间远大于实际操作区间【注意这会剪掉时间区间外的所有交易记录】
+    '''
+    tmp_df_orders_cx  = data_df_orders_cx[(data_df_orders_cx['date']>=range_period[0]) & (data_df_orders_cx['date']<=range_period[1])]
+    data_list_dates   = list(sorted(set(tmp_df_orders_cx['date'])))
+    dt_start          = min(data_list_dates)                # 回测的起点，通常这一天包含了初次建仓的全部指令
+    dt_end            = range_period[1] if range_period[1]<datetime(2050,1,1) else max(data_list_dates)
+    data_list_tickers = list(set(tmp_df_orders_cx['ticker']))
 
-    df_price = data_df_price.rename(columns=lambda x:int(x.split('.')[0])).loc[min(data_list_dates):, data_list_tickers]
-    aly_df_netvalue_cx = df_netvalue_backtest.loc[min(data_list_dates):,'netvalueCosted'].to_frame().rename(columns={'netvalueCosted':'backtest_netvalue'})
-    aly_df_netvalue_cx['index_close'] = df_index.loc[min(data_list_dates):]
+    df_price = data_df_price.rename(columns=lambda x:ticker_str_to_int(x)).loc[dt_start:, data_list_tickers]
+    aly_df_netvalue_cx = df_netvalue_backtest.loc[dt_start:dt_end,'netvalueCosted'].to_frame().rename(columns={'netvalueCosted':'backtest_netvalue'})
+    aly_df_netvalue_cx['index_close'] = df_index.loc[dt_start:]
     
     # 计算股票头寸和相应的收盘总市值，注意这里没有考虑送股和转股的影响
-    tmp_df_holding = pd.DataFrame(0, index=df_netvalue_backtest.index, columns=data_list_tickers)
-    for ii in range(len(data_df_orders_cx)):
-        tmp_dict = data_df_orders_cx.iloc[ii].to_dict()
+    # 注意这里有一个bug，如果一个测试之前做过，但是结束后没有做清零处理，导致之前残存的仓位留到后面，影响了总净值
+    tmp_df_holding = pd.DataFrame(0, index=df_price.index, columns=data_list_tickers)
+    for ii in range(len(tmp_df_orders_cx)):
+        tmp_dict = tmp_df_orders_cx.iloc[ii].to_dict()
         tmp_df_holding.loc[tmp_dict['date']:, tmp_dict['ticker']] = tmp_dict['hold_new']
     aly_df_netvalue_cx['stocksAsset'] = (tmp_df_holding * df_price).sum(axis=1)
     
@@ -174,7 +181,7 @@ def analysis_netvalue_cx(df_netvalue_backtest, data_df_price, aly_df_bias_trade_
     aly_df_netvalue_cx['surplus'] = 0
     aly_df_netvalue_cx['dividends'] = 0
     for u in data_list_dates:
-        aly_df_netvalue_cx.loc[u:, 'surplus'] = data_df_orders_cx[data_df_orders_cx['date']==u]['surplus'].mean()
+        aly_df_netvalue_cx.loc[u:, 'surplus'] = tmp_df_orders_cx[tmp_df_orders_cx['date']==u]['surplus'].mean()
     for u in aly_df_bias_trade_cx.index:
         aly_df_netvalue_cx.loc[u:, 'cost'] = aly_df_netvalue_cx.loc[u:, 'cost'] + aly_df_bias_trade_cx.loc[u, 'tradeCost']
     tmp_df_dividends = data_df_delivery_cx[data_df_delivery_cx['操作'].isin(['股息入账', '股息红利税补', '兑息扣税'])]
