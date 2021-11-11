@@ -189,8 +189,8 @@ def analysis_netvalue_cx(df_netvalue_backtest, data_df_price, aly_df_bias_trade_
         tmp_dict = tmp_df_dividends.iloc[ii].to_dict()
         aly_df_netvalue_cx.loc[tmp_dict['成交日期']:, 'dividends'] = aly_df_netvalue_cx.loc[tmp_dict['成交日期']:, 'dividends'] + tmp_dict['发生金额']
 
-    aly_df_netvalue_cx['trade_netvalue']    = aly_df_netvalue_cx['stocksAsset'] + aly_df_netvalue_cx['dividends'] \
-                                            + aly_df_netvalue_cx['surplus'] - aly_df_bias_trade_cx.loc[u, 'tradeCost']
+    aly_df_netvalue_cx['trade_netvalue'] = aly_df_netvalue_cx['stocksAsset'] + aly_df_netvalue_cx['dividends'] \
+                                         + aly_df_netvalue_cx['surplus']     - aly_df_netvalue_cx['tradeCost']
 
     # 计算归一化的净值曲线
     aly_df_netvalue_cx['netvalue_backtest'] = aly_df_netvalue_cx['backtest_netvalue'] / aly_df_netvalue_cx['backtest_netvalue'].iloc[0]
