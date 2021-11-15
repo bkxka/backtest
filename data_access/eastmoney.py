@@ -5,8 +5,6 @@ Created on Thu Sep 16 09:36:44 2021
 @author: 好鱼
 """
 
-
-
 import requests
 import json
 import random
@@ -48,12 +46,9 @@ def get_shszhk_netbuy():
     return rlt_flt_netbuy
     
 
-# 获取最近一日的股票成交一分钟数据，支持股指、ETF基金查询
-def get_price_realtime_1m(str_ticker, int_days=1):
-    ''' 获取最近一日的股票成交一分钟数据,开,收,高,低,总手,总金额,当日累计成交均价 '''
-    headers = {'User-Agent': random.choice(USER_AGENTS)}
-    
-    # tmp_exchange = "1" if str_ticker.split('.')[1] in ["SH", "OF"] else "0"
+# 获取证券交易所编码
+def get_exchange_code(str_ticker):
+    ''' 获取证券交易所编码 '''
     tmp_exchange = 1
     if str_ticker.split('.')[1] == "SH":
         tmp_exchange = 1
@@ -70,8 +65,16 @@ def get_price_realtime_1m(str_ticker, int_days=1):
             tmp_exchange = 1
         elif str_ticker[:2] == '15':
             tmp_exchange = 0
+
+    return tmp_exchange
+
+
+# 获取最近一日的股票成交一分钟数据，支持股指、ETF基金查询
+def get_price_realtime_1m(str_ticker, int_days=1):
+    ''' 获取最近一日的股票成交一分钟数据,开,收,高,低,总手,总金额,当日累计成交均价 '''
+    headers = {'User-Agent': random.choice(USER_AGENTS)}
  
-    
+    tmp_exchange = get_exchange_code(str_ticker)
     para_ticker  = str(tmp_exchange) + "." + str_ticker.split('.')[0]
     para_cb      = 'jQuery112406734237976539736_1615335275005'  # checkbox，HTML中的复选框
     para_fields1 = 'f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13' # 查询字段1
@@ -133,6 +136,27 @@ def get_tradingDay_recent():
         return None
 
 
+# 获取公司公告列表/标题/发布时间等信息
+def get_list_announce(str_ticker, page_index, page_size=100):
+    ''' 获取公司公告列表/标题/发布时间等信息 '''
+    
+    headers = {'User-Agent': random.choice(USER_AGENTS)}
+    tmp_exchange = get_exchange_code(str_ticker)
+    
+    base_url  = 'http://np-anotice-stock.eastmoney.com/api/security/ann?'
+    para_page = 'page_size=' + str(page_size) + '&page_index=' + str(page_index)
+    para_cb  = '&cb=jQuery183026174794613872066_1636699031768&'
+    para_ticker = 'market_stock_list=' + str(tmp_exchange) + "." + str_ticker.split('.')[0]
+    para_type   = '&CodeType=1&_=1636699032164'
+    
+    URL = base_url + para_page + para_cb + para_ticker + para_type
+    r = requests.get(URL, headers = headers)
+    tmp_str = r.content.decode('utf-8')
+    tmp_dic = tmp_str[len(tmp_str.split('(')[0])+1:-1]
+    result = json.loads(tmp_dic)['data']
+
+    return result
+
 
 if False:
     for q in list_agent_add:
@@ -157,8 +181,9 @@ potential_url = {
 "日K线": "http://push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery112403024568536948198_1616898424824&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&secid=1.600066&beg=0&end=20500000&_=1616898424882",
 "日K线": "http://push2.eastmoney.com/api/qt/stock/cqcx/get?id=SH600066&ut=e1e6871893c6386c5ff6967026016627&cb=jsonp1616899911324",
 "日K线": "http://90.push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery1124049848821488444317_1617171967804&secid=1.600066&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=0&end=20500101&lmt=120&_=1617171967868",
-"公司公告": "http://cmsdataapi.eastmoney.com/api/infomine?code=600066&marketType=1&types=1%2C2&startTime=2020-12-25&endTime=2021-03-26&format=yyyy-MM-dd&cb=jsonp1616900033139",
+"公司新闻": "http://cmsdataapi.eastmoney.com/api/infomine?code=600066&marketType=1&types=1%2C2&startTime=2020-12-25&endTime=2021-03-26&format=yyyy-MM-dd&cb=jsonp1616900033139",
 "股指期货": "http://push2.eastmoney.com/api/qt/stock/trends2/get?cb=jQuery1124042443897962606636_1617020740825&secid=8.041104&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf11%2Cf12%2Cf13&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58&iscr=0&ndays=1&_=1617020740861",
+"公告列表": "http://np-anotice-stock.eastmoney.com/api/security/ann?page_size=3&page_index=1&cb=jQuery183026174794613872066_1636699031768&market_stock_list=0.000002&CodeType=1&_=1636699032164",
 }
 
 
