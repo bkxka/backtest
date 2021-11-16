@@ -60,7 +60,8 @@ df_mapper_clip = lambda df_map, df_data:df_data[df_map.iloc[:,0]].set_axis(list(
 
 time_index_df = lambda x:x.rename(index = lambda y:str_to_time(y) if type(y)==str else y)   # 把时间索引处理成Timestamp格式
 dedu_df_rows  = lambda x:x.loc[~x.index.duplicated(keep='first')]                           # 去除掉索引重复的行
-df_diff       = lambda x:x.abs().sum(axis=1).sum()
+df_diff       = lambda x:x.abs().sum(axis=1).sum()                                          # 分析两个dataframe的差异
+df_index_norm = lambda x:(x.T / x.sum(axis=1).T).T                                          # 纵向归一化（同行的数据之和为1）
 
 # 分值变换
 def df_rescale_score(df_pool, df_scores, method):
