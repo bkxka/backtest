@@ -75,11 +75,14 @@ def read_file(str_metric):
         intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
         intm_df_file = pd.read_csv(par_str_path_cb+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
         return df_index_time(intm_df_file)
-    elif str_metric in ['announceDate', 'netQProfit', 'netEquity']:
+    elif str_metric in ['announceDate', 'netQProfit', 'netEquity', 'title']:
         intm_list_files = os.listdir(par_str_path_report)
         intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_report_'+str_metric+'.csv'])
-        intm_df_file = pd.read_csv(par_str_path_report+str(intm_int_last_date)+'_report_'+str_metric+'.csv', index_col=0)
-        if str_metric == 'announceDate':
+        intm_df_file = pd.read_csv(par_str_path_report+str(intm_int_last_date)+'_report_'+str_metric+'.csv', index_col=0, low_memory=False, encoding='utf_8_sig')
+        if str_metric == 'title':
+            intm_df_file['notice_date'] = intm_df_file['notice_date'].apply(lambda x:str_to_time(x[:10]) if type(x)==str else x)
+            return intm_df_file
+        elif str_metric == 'announceDate':
             intm_df_file = intm_df_file.applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
         return df_index_time(intm_df_file)
     elif str_metric in ['industry_sw', 'industry_wind']:
