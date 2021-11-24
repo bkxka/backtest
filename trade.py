@@ -231,10 +231,14 @@ def trade_strategy_simulation(stgy_str_cb, data_df_tickers_cb, stgy_df_cb_full, 
             pass
         else:
             tmp_df_position_stock_nodelta = stgy_df_trade_signal['position_stock'].copy(deep=True)
+            # 寻找买入/卖出交易的时点，将这个状态覆盖后续所有日期
             tmp_df_signal_adjust = stgy_df_trade_signal['signal'] ^ stgy_df_trade_signal['signal'].shift(1)
             tmp_df_signal_adjust = tmp_df_signal_adjust[tmp_df_signal_adjust==True].sort_index()
             for u in tmp_df_signal_adjust.index:
-                stgy_df_trade_signal.loc[u:, 'position_stock'] = tmp_df_position_stock_nodelta.loc[u]
+                # stgy_df_trade_signal.loc[u:, 'position_stock'] = tmp_df_position_stock_nodelta.loc[u]
+                # 修复一个错误：固定对冲比例，股票分红送转后对冲头寸未能相应变化
+                stgy_df_trade_signal.loc[u:, 'position_stock'] = tmp_df_position_stock_nodelta.loc[u]\
+                                                               * stgy_df_cb_full.loc[u:, 'conv_rate'] / stgy_df_cb_full.loc[u, 'conv_rate']
         
         # 根据交易方式调整仓位：
         if dict_trade['fix'] == 'cb':
