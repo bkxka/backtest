@@ -80,7 +80,7 @@ def get_trade_order(stgy_df_order_last, stgy_df_order_new, flt_totalAsset, path,
     df_result['orderTime'] = str(datetime.now())[:19]
     df_result.to_csv(path+str_filename, encoding='utf_8_sig')
 
-    return 0
+    return df_result
 
 
 

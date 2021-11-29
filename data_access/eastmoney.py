@@ -16,6 +16,7 @@ import time
 # ua = UserAgent(verify_ssl=False)
 
 from tools.tools_config import *
+__warning__ = '如果导入超过1天的历史数据，则该交易日前的所有分钟的开盘价都为0，所以尽量做到每天更新' # warning！！！
 
 
 # 获取实时的陆股通统计数据

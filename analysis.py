@@ -171,28 +171,53 @@ def get_slices_return(set_int_slices, stgy_df_scores, data_df_stocks_pool, data_
     return result_df_netvalue, result_df_pnl
     
 
+# 多元线性回归函数
+def mult_linear_regress(df_x, df_y):
+    ''' 多元线性回归函数，需保持 x 为(m,n)矩阵，y为(m,1)矩阵 '''
+    
+    Y    = df_y.values.reshape((-1,1))
+    X    = df_x.values
+    ones = np.ones(X.shape[0]).reshape(-1,1)
+    X    = np.hstack((X, ones))
+    
+    w_   = np.dot(np.dot(np.linalg.inv(np.dot(X.T, X)), X.T), Y)
+    df_w = pd.DataFrame(w_, index=list(df_x.columns) + ['intercept'])
+
+    return df_w
+ 
+
 # 计算beta
 def get_beta(data_df_index_return, data_df_daily_return, data_df_tradeFlag, period=0):
-    ''' 计算beta，参数分别为 指数收益率、日收益率、成交过滤、周期 '''
-    tmp_df_data = pd.concat([data_df_index_return, data_df_daily_return, data_df_tradeFlag], axis=1)
-    tmp_df_data.columns = ['index', 'stock', 'flag']
-    tmp_df_data['beta'] = 0
-    tmp_df_data = tmp_df_data[tmp_df_data['flag']>0].dropna()
-    if len(tmp_df_data)>120:
-        tmp_df_beta = tmp_df_data.iloc[120:]
-        tmp_df_data = tmp_df_data.iloc[60:]
-        if period<=0:
-            for u in tmp_df_beta.index:
-                res = linregress(tmp_df_data.loc[:u, 'index'], tmp_df_data.loc[:u, 'stock'])
-                tmp_df_beta.loc[u, 'beta'] = res.slope
-            return tmp_df_beta[['beta']]
-        else:
-            for u in tmp_df_beta.index:
-                res = linregress(tmp_df_data.loc[:u, 'index'].iloc[-period:], tmp_df_data.loc[:u, 'stock'].iloc[-period:],)
-                tmp_df_beta.loc[u, 'beta'] = res.slope
-            return tmp_df_beta[['beta']]
-    else:
+    ''' 
+    计算beta，参数分别为 指数收益率、日收益率、成交过滤、周期
+    修订get_beta函数，使之能够支持多元线性回归
+    注意输入的参数有的是dataframe有的是series，需格外注意函数内name/column的处理，最终结果返回dataframe
+    注意一元和多元回归返回的指标名称并不一样：一元回归返回的name是beta，多元回归返回name的是index
+    '''
+    list_index = list(pd.DataFrame(data_df_index_return).columns)
+    tmp_df_data = pd.concat([pd.DataFrame(data_df_index_return), 
+                             pd.DataFrame(data_df_daily_return).rename(columns=lambda x:'stock'), 
+                             pd.DataFrame(data_df_tradeFlag).rename(columns=lambda x:'flag')], axis=1)
+    tmp_df_data = tmp_df_data[tmp_df_data['flag']>0].dropna().sort_index(ascending=True)
+
+    # 可供计算的样本不足120则返回None
+    if len(tmp_df_data)<=120:
         return None
+    
+    tmp_df_data = tmp_df_data.iloc[60:]                     # 先从样本中剔除掉刚上市的前60个交易日的涨跌幅
+    tmp_df_beta = tmp_df_data.copy(deep=True).iloc[60:]     # 再从样本的第60个交易日开始计算beta
+    if period<=0:
+        for u in tmp_df_beta.index:
+            res = mult_linear_regress(tmp_df_data.loc[:u, list_index], tmp_df_data.loc[:u, 'stock'])
+            tmp_df_beta.loc[u, list_index] = res.loc[list_index, 0]
+    else:
+        for u in tmp_df_beta.index:
+            res = mult_linear_regress(tmp_df_data.loc[:u, list_index].iloc[-period:], tmp_df_data.loc[:u, 'stock'].iloc[-period:])
+            tmp_df_beta.loc[u, list_index] = res.loc[list_index, 0]
+
+    # 如果自变量（指数）只有一个，则返回名为beta的dataframe
+    return tmp_df_beta[list_index].rename(columns=lambda x:'beta') if len(list_index)==1 else tmp_df_beta[list_index]
+
 
 
 # 计算股指期货的日收益率（含贴水），周三临近收盘时调仓切换合约
