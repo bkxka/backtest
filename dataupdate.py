@@ -786,18 +786,14 @@ def update_index_constituent(str_index, str_path):
     intm_df_weight   = ds.read_file(str_index+"_weight").rename(columns=lambda x:int(x))
     intm_df_industry = ds.read_file(str_index+"_industry").rename(columns=lambda x:int(x))
     
-    # 判断是否有月份更迭
+    # 判断是否有月份更迭的两种逻辑：
+    # 000300：每个月的最新一天；其他：每个月的最后一天
     intm_list_date_update = get_list_date_update(intm_df_industry)
-    tmp_dt_date_newest    = max(intm_df_stocks.index)
-    intm_list_date_update = [v for v in intm_list_date_update if v>tmp_dt_date_newest]
-
-    if len(intm_list_date_update)==0:
-        print(">>> %s| 指数 %s 权重数据下月更新..."%(str_hours(0),str_index))
-        return 0
-
-    # 进入到新的月份
-    tmp_dt_update = min(intm_list_date_update) if str_index == "000300.SH" else\
-                    max([v for v in intm_list_date_update if v.month==min(intm_list_date_update).month])
+    if str_index == "000300.SH":
+        tmp_dt_update = min([v for v in intm_list_date_update if v.month!=min(intm_list_date_update).month])
+    else:
+        tmp_dt_update = max([v for v in intm_list_date_update if v.month==min(intm_list_date_update).month])
+    
     tmp_dt_update = str(time_to_int(tmp_dt_update))
     tmp_raw_index_constituent = wind_func_wset(str_index, tmp_dt_update, tmp_dt_update)
 
