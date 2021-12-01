@@ -58,10 +58,12 @@ df_initialize  = lambda df_data, y:df_data.copy(deep=True).applymap(lambda z:y)
 df_index_swap  = lambda x:pd.DataFrame(x.index, index=x.iloc[:,0])                           # 索引与单列数据互换
 df_mapper_clip = lambda df_map, df_data:df_data[df_map.iloc[:,0]].set_axis(list(df_map.index), axis='columns', inplace=False)
 
-time_index_df = lambda x:x.rename(index = lambda y:str_to_time(y) if type(y)==str else y)   # 把时间索引处理成Timestamp格式
-dedu_df_rows  = lambda x:x.loc[~x.index.duplicated(keep='first')]                           # 去除掉索引重复的行
-df_diff       = lambda x:x.abs().sum(axis=1).sum()                                          # 分析两个dataframe的差异
-df_index_norm = lambda x:(x.T / x.sum(axis=1).T).T                                          # 纵向归一化（同行的数据之和为1）
+time_index_df  = lambda x:x.rename(index = lambda y:str_to_time(y) if type(y)==str else y)   # 把时间索引处理成Timestamp格式
+dedu_df_rows   = lambda x:x.loc[~x.index.duplicated(keep='first')]                           # 去除掉索引重复的行
+df_diff        = lambda x:x.abs().sum(axis=1).sum()                                          # 分析两个dataframe的差异
+df_index_norm  = lambda x:(x.T / x.sum(axis=1).T).T                                          # 纵向归一化（同行的数据之和为1）
+df_sign        = lambda x:1 if x>0 else (-1 if x<0 else 0)                                   # 计算数值的正负符号
+
 
 # 分值变换
 def df_rescale_score(df_pool, df_scores, method):
@@ -81,6 +83,40 @@ def df_rescale_score(df_pool, df_scores, method):
         tmp_df_score = df_scores[df_pool].rank(axis=1, method='average', ascending=False, na_option='keep', pct=True)
 
     return tmp_df_score
+
+
+# 数据聚合切分
+def df_cut_sum(df_data, list_sep):
+    '''
+    Parameters
+    ----------
+    df_data : dataframe
+        待分割的dataframe，已按照index次序排列
+    list_sep : list
+        分割的节点，应为index中的元素，已按照次序排列
+
+    Returns
+    -------
+    df_result : dataframe
+        分割聚合后的结果
+    '''
+    
+    tmp_df_data = df_data.copy(deep=True)
+    df_result = pd.DataFrame(columns=df_data.columns)
+    for u in list_sep:
+        tmp_df      = tmp_df_data.loc[:u]
+        df_result   = df_result.append(pd.DataFrame(tmp_df.sum(axis=0).rename(u, inplace=True)).T)
+        try:
+            tmp_df_data = tmp_df_data.loc[u:].iloc[1:]
+        except:
+            break
+        
+    if len(tmp_df_data)>0:
+        df_result   = df_result.append(pd.DataFrame(tmp_df_data.sum(axis=0).rename(tmp_df_data.index[-1], inplace=True)).T)
+    
+    return df_result
+
+
 
 
 
