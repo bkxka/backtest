@@ -62,7 +62,6 @@ time_index_df  = lambda x:x.rename(index = lambda y:str_to_time(y) if type(y)==s
 dedu_df_rows   = lambda x:x.loc[~x.index.duplicated(keep='first')]                           # 去除掉索引重复的行
 df_diff        = lambda x:x.abs().sum(axis=1).sum()                                          # 分析两个dataframe的差异
 df_index_norm  = lambda x:(x.T / x.sum(axis=1).T).T                                          # 纵向归一化（同行的数据之和为1）
-df_sign        = lambda x:1 if x>0 else (-1 if x<0 else 0)                                   # 计算数值的正负符号
 
 
 # 分值变换
@@ -172,6 +171,9 @@ def str_hours(x=0):
 # 其他函数
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+int_sign = lambda x:1 if x>0 else (-1 if x<0 else 0)                                   # 计算数值的正负符号
+
 
 # 拼接股票代码
 def get_ticker_pieces(list_tickers, int_piece=100):

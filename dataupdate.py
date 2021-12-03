@@ -790,7 +790,11 @@ def update_index_constituent(str_index, str_path):
     # 000300：每个月的最新一天；其他：每个月的最后一天
     intm_list_date_update = get_list_date_update(intm_df_industry)
     if str_index == "000300.SH":
-        tmp_dt_update = min([v for v in intm_list_date_update if v.month!=min(intm_list_date_update).month])
+        try:
+            tmp_dt_update = min([v for v in intm_list_date_update if v.month!=min(intm_list_date_update).month])
+        except:
+            print(">>> 当月指数成分数据已是最新的:", str_index)
+            return 0
     else:
         tmp_dt_update = max([v for v in intm_list_date_update if v.month==min(intm_list_date_update).month])
     
