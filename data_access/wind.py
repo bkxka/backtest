@@ -209,6 +209,38 @@ def wind_func_wset(str_metric, str_start_date, str_end_date):
         return wind_func_wset(str_metric, str_start_date, str_end_date)
 
 
+# 调用wind分钟序列函数
+def wind_func_wsi(str_ticker, str_date_start, str_date_end, str_time_start="09:00:00", str_time_end="15:30:00"):
+    '''
+    调用wind分钟序列函数; 注意不同的品种可能导出的volume口径不一致，需要在后端进行处理
+
+    Parameters
+    ----------
+    str_ticker : TYPE
+        DESCRIPTION.
+    str_date_start : TYPE
+        2012-01-01.
+    str_date_end : TYPE
+        2012-01-01.
+    str_time_start : TYPE, optional
+        DESCRIPTION. The default is "09:00:00".
+    str_time_end : TYPE, optional
+        DESCRIPTION. The default is "15:30:00".
+
+    Returns
+    -------
+    tmp_df_data : dataframe
+        DESCRIPTION.
+
+    '''
+    tmp_raw_data = w.wsi(str_ticker, "open,close,high,low,volume,amt", 
+                         str_date_start+" "+str_time_start, str_date_end+" "+str_time_end, 
+                         "periodstart="+str_time_start+";periodend="+str_time_end)
+    tmp_df_data = pd.DataFrame(tmp_raw_data.Data, index=tmp_raw_data.Fields,
+                               columns=tmp_raw_data.Times).T
+    
+    return tmp_df_data
+
 
 
 if __name__=='__main__':
