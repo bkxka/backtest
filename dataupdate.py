@@ -824,7 +824,92 @@ def update_index_constituent(str_index, str_path):
         return 0
 
 
+# 更新分钟数据
+def update_minute(str_security, str_path_in, str_path_out, max_try=200):
+    '''
+    更新分钟数据
+    '''
+    # str_path_in  = "C:/RawData/minute/cb_em/"
+    # str_path_out = "C:/InvestmentResearch/database/minute/cb/"
+    list_files = os.listdir(str_path_out)
+    
+    if   str_security == 'cb':
+        data_df_amount_stock = ds.read_file("cb_amount")
+        tmp_int_vol_rate     = 10
+    elif str_security == 'stock':
+        data_df_amount_stock = ds.read_file("amount")
+        tmp_int_vol_rate     = 100
+
+    ii = len(data_df_amount_stock) - 1                         # 回溯最近的20个交易日，检验是否需要重补数据
+    while (ii>len(data_df_amount_stock)-20) and (max_try>0):
+
+        tmp_dt_date   = data_df_amount_stock.index[ii]
+        tmp_str_date  =     time_to_str(tmp_dt_date)
+        tmp_str_date2 = str(time_to_int(tmp_dt_date))
+        if str_security + '_' + tmp_str_date2 + '.csv' in list_files:
+            break                                               # 如果数据文件已经存在，则退出循环
+
+        tmp_df_amount = data_df_amount_stock.iloc[ii]
+        tmp_df_amount = tmp_df_amount[tmp_df_amount>0]
+        tmp_df_raw_data = pd.read_csv(str_path_in+str_security +'_'+tmp_str_date2+'.csv', low_memory=True, encoding='utf_8_sig').set_index('Unnamed: 0')
+        # tmp_df_raw_data = tmp_df_raw_data.rename(columns={'vol':'volume', 'datetime':'timestamp'})
+        tmp_df_raw_data['volume'] = tmp_df_raw_data['lots'] * tmp_int_vol_rate
+    
+        tmp_df_sign     = tmp_df_raw_data.groupby('ticker').sum()['amount'] - tmp_df_amount
+        tmp_df_sign_new = pd.Series(dtype=np.float64).append(tmp_df_sign[tmp_df_sign.isnull().values==True])\
+                                                     .append(tmp_df_sign[tmp_df_sign> 1e4])\
+                                                     .append(tmp_df_sign[tmp_df_sign<-1e4])
+        if len(tmp_df_sign_new)>100:
+            print(">>> 数据空缺过多，暂不处理", str_security, tmp_str_date2)
+            break                # 数据空缺过多，暂不补充
+        else:
+            print("\n>>> %s| 开始处理 %s %s 分钟行情数据..."%(str_hours(0), str_security, tmp_str_date))
+            for u in tmp_df_sign_new.index:
+                if (u in data_df_amount_stock.columns) and (data_df_amount_stock.loc[tmp_dt_date, u]>0):
+                    tmp_df_new_value = wind_func_wsi(u, tmp_str_date, tmp_str_date)     
+                    tmp_df_new_value['ticker']    = u
+                    tmp_df_new_value['timestamp'] = tmp_df_new_value.index
+                    # wind 输出的volume就是准确的volume，无需缩放
+                    # 以上说法错误：wind输出的上交所可转债volume，是实际volume的1/10
+                    tmp_df_new_value['volume'] = tmp_df_new_value['volume'] * (10 if (str_security=='cb' and u.split('.')[1]=='SH') else 1)
+                    
+                    max_try = max_try - 1
+                    tmp_df_raw_data = tmp_df_raw_data[tmp_df_raw_data.ticker!=u].append(tmp_df_new_value)
+                    print("   >",u)
+    
+            tmp_df_final_data = tmp_df_raw_data[['open', 'close', 'high', 'low', 'volume', 'amount', 'timestamp', 'ticker']]
+            tmp_df_final_data = tmp_df_final_data.sort_values(by=['ticker', 'timestamp'], ascending=True)
+            tmp_df_final_data.index = range(len(tmp_df_final_data))
+            tmp_df_final_data.to_csv(str_path_out+str_security+'_'+tmp_str_date2+'.csv', encoding='utf_8_sig')
+            ii = ii - 1
+            print(">>> 将数据保存到本地...")
+
+    return 0
+
+
+
 if __name__=='__main__':
     
     pass
+    
+    # # # # # # # # # # # # # # # # # # # # # # # # 
+    
+    # 分钟线数据说明：
+    
+    #                              淘宝数据                        东财数据                         wind数据
+    # 时间戳标记                  1分钟的结束                     1分钟的结束                     1分钟的开始
+    # 无量K线价格                 上一收盘价                      上一收盘价                         空缺nan
+    # 上午开盘集合竞价       含在第一根1分钟K线中      有一根单独的K线，开高低收价格相等      含在第一根1分钟K线中
+    # 上午收盘                                                                              上午收盘有一根单独的K线
+    # 下午开盘
+    # 下午收盘集合竞价          有一根单独的K线                 有一根单独的K线                 有一根单独的K线
+    # 收盘集合竞价3分钟    1根0 K线，竞价在最后一根        1根0 K线，竞价在最后一根         2根0 K线，竞价在最后一根
+    # 上午K线数量                     120                             121                             121
+    # 下午K线数量                     120                             120                             121
+    # 全天K线数量                     240                             241                             242
+
+
+
+
+
 
