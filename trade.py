@@ -15,6 +15,7 @@ import numpy as np
 import math
 from sklearn import linear_model
 import dataset as ds
+from tools.tools_func import *
 
 
 
@@ -130,13 +131,30 @@ def trade_model(stgy_df_target_position, df_close, df_dayReturn, df_dayLimit, df
 
 
 # 根据实际持仓，将持仓转变为股票组合的净值
-def trade_netvalue(df_actual_position, df_trade_record, list_tradingDays, df_close, flt_fee, flt_impact_cost):
+# 新增了默认参数实际成交价 df_price_trade，默认值等同于收盘价；根据实际成交价对策略净值进行修正
+# 修改了计算交易量/交易成本的方法，实际上废弃了 df_trade_record 参数
+# amountOneSide 实际指的是总的交易金额（含买入和卖出金额之和）
+# 函数支持对非连续、日间与日内混杂的净值曲线计算
+def trade_netvalue(df_actual_position, df_trade_record, list_tradingDays, df_close, flt_fee, flt_impact_cost, df_price_trade=None):
     ''' 根据实际持仓，将持仓转变为股票组合的净值 '''
-    df_netvalue = pd.DataFrame(0, index=list_tradingDays, columns=['netvalueRaw', 'amountOneSide', 'tradeCost', 'costFactor', 'netvalueCosted'])
+
+    df_netvalue = pd.DataFrame(0, index=list_tradingDays, columns=['netvalueRaw', 'amountOneSide', 'tradeCost', 'costFactor', 'tradeFactor', 'netvalueCosted'])
+
+    # 实际成交价的测算
+    # 默认情况是按照收盘价成交，成交对净值计算无影响
+    # 计入实际成交价，则把盘中买入的证券收盘时收益计入净值；正的成交(买入)+正的bias(成交价高于收盘价) 带来负的收益
+    tmp_df_trade_bias          = df_close.applymap(lambda x:0) if (df_price_trade is None) else (df_price_trade / df_close - 1)
+    tmp_df_trade_bias['cash']  = 0
+    tmp_df_trade_amount        = df_actual_position - df_index_norm(df_actual_position.shift(1) * df_close / df_close.shift(1))
+    df_netvalue['tradeFactor'] = (1 - (tmp_df_trade_amount * tmp_df_trade_bias).fillna(0).sum(axis=1)).cumprod()
+    
+    # 交易成本的测算：计入交易量
+    # df_netvalue = pd.DataFrame(0, index=list_tradingDays, columns=['netvalueRaw', 'amountOneSide', 'tradeCost', 'costFactor', 'netvalueCosted'])
+    # df_netvalue.loc[df_trade_record.index, 'amountOneSide'] = df_trade_record['tradeAmountOneSide']
+    df_netvalue.loc[df_actual_position.index, 'amountOneSide'] = tmp_df_trade_amount.abs().sum(axis=1)
+    df_netvalue['tradeCost']   = df_netvalue['amountOneSide'] * (flt_fee + flt_impact_cost)
+    df_netvalue['costFactor']  = (1 - df_netvalue['tradeCost']).cumprod()
     df_netvalue['netvalueRaw'] = 1
-    df_netvalue.loc[df_trade_record.index, 'amountOneSide'] = df_trade_record['tradeAmountOneSide']
-    df_netvalue['tradeCost'] = df_netvalue['amountOneSide'] * (flt_fee + flt_impact_cost)
-    df_netvalue['costFactor'] = (1 - df_netvalue['tradeCost']).cumprod()
     
     ii, jj = 1, 0
     tmp_dt_base_date = df_actual_position.index[jj]
@@ -152,7 +170,7 @@ def trade_netvalue(df_actual_position, df_trade_record, list_tradingDays, df_clo
         ii = ii + 1
     
     # 计算交易成本修正后的股票组合净值
-    df_netvalue['netvalueCosted'] = df_netvalue['costFactor'] * df_netvalue['netvalueRaw']
+    df_netvalue['netvalueCosted'] = df_netvalue['costFactor'] * df_netvalue['tradeFactor'] * df_netvalue['netvalueRaw']
     
     return df_netvalue
     
