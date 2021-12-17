@@ -32,6 +32,7 @@ if True:
     par_str_path_price  = par_str_path + '/price/'
     par_str_path_report = par_str_path + '/report/'
     par_str_path_market = par_str_path + '/market/'
+    par_str_path_minute = par_str_path + '/minute/temp/'
     # par_str_path_bulletin = par_str_path + '/bulletin/'
     par_str_path_moneyflow = par_str_path_price + 'moneyflow/'
 
@@ -45,35 +46,16 @@ path_moneyflow = path + 'moneyflow/moneyflow_'
 # 根据指标读取最新的数据文件，并对时间索引做标准化处理
 def read_file(str_metric):
     ''' 根据指标读取最新的数据文件，并对时间索引做标准化处理 '''
+    # 以下是特定指标读数
     if str_metric[:3]=='000' or str_metric in ['index_close', 'CFE_close', 'CFE_vwap']:
         intm_list_files = os.listdir(par_str_path_index)
         intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
         intm_df_file = pd.read_csv(par_str_path_index+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0)
         return df_index_time(intm_df_file)
-    elif 'ticker' in str_metric:
-        intm_list_files = os.listdir(par_str_path_ticker)
-        intm_str_target_file = max([v for v in intm_list_files if str_metric in v])
-        intm_df_file = pd.read_csv(par_str_path_ticker+intm_str_target_file, index_col=0)
-        if 'cb' in str_metric:
-            intm_df_file[['InterestDateBegin', 'InterestDateEnd', 'DateListing', 'DateRedeemNotice']] = \
-            intm_df_file[['InterestDateBegin', 'InterestDateEnd', 'DateListing', 'DateRedeemNotice']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-        if 'CFE' in str_metric:
-            intm_df_file[['contract_issue_date', 'last_trade_date', 'last_delivery_month']] = \
-            intm_df_file[['contract_issue_date', 'last_trade_date', 'last_delivery_month']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-        if 'stock' in str_metric:
-            intm_df_file['DateIPO']    = intm_df_file['DateIPO'].apply(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-            intm_df_file['DateDelist'] = intm_df_file['DateDelist'].apply(lambda x:str_to_time(x) if x!='0' else x)
-            intm_df_file['DateDelist'][intm_df_file['DateDelist']=='0'] = np.nan
-        return intm_df_file
     elif str_metric in ['open', 'high', 'low', 'close', 'hclose', 'vwap', 'adjfactor', 'mktcap', 'dayReturn', 'st', 'dayLimit', 'shszhkHold', 'amount', 'floatAmktcap', 'beta300', 'beta905']:
         intm_list_files = os.listdir(par_str_path_price)
         intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_price_'+str_metric+'.csv'])
         intm_df_file = pd.read_csv(par_str_path_price+str(intm_int_last_date)+'_price_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
-        return df_index_time(intm_df_file)
-    elif 'cb_' in str_metric:
-        intm_list_files = os.listdir(par_str_path_cb)
-        intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
-        intm_df_file = pd.read_csv(par_str_path_cb+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
         return df_index_time(intm_df_file)
     elif str_metric in ['announceDate', 'netQProfit', 'netEquity', 'title']:
         intm_list_files = os.listdir(par_str_path_report)
@@ -117,6 +99,35 @@ def read_file(str_metric):
             list_column_dates = ['reporting_date', 'share_benchmark_date', 'dividends_announce_date', 'shareregister_date', 'exrights_exdividend_date', 'dividend_payment_date']
             intm_df_file[list_column_dates] = intm_df_file[list_column_dates].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
             return intm_df_file
+    # 以下是非特定的指标读数
+    elif 'ticker' in str_metric:
+        intm_list_files = os.listdir(par_str_path_ticker)
+        intm_str_target_file = max([v for v in intm_list_files if str_metric in v])
+        intm_df_file = pd.read_csv(par_str_path_ticker+intm_str_target_file, index_col=0)
+        if 'cb' in str_metric:
+            intm_df_file[['InterestDateBegin', 'InterestDateEnd', 'DateListing', 'DateRedeemNotice']] = \
+            intm_df_file[['InterestDateBegin', 'InterestDateEnd', 'DateListing', 'DateRedeemNotice']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
+        if 'CFE' in str_metric:
+            intm_df_file[['contract_issue_date', 'last_trade_date', 'last_delivery_month']] = \
+            intm_df_file[['contract_issue_date', 'last_trade_date', 'last_delivery_month']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
+        if 'stock' in str_metric:
+            intm_df_file['DateIPO']    = intm_df_file['DateIPO'].apply(lambda x:str_to_time(x[:10]) if type(x)==str else x)
+            intm_df_file['DateDelist'] = intm_df_file['DateDelist'].apply(lambda x:str_to_time(x) if x!='0' else x)
+            intm_df_file['DateDelist'][intm_df_file['DateDelist']=='0'] = np.nan
+        return intm_df_file
+    # 注意可能会和分钟线数据混同
+    elif 'cb_' in str_metric and 'minu' not in str_metric:
+        intm_list_files = os.listdir(par_str_path_cb)
+        intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
+        intm_df_file = pd.read_csv(par_str_path_cb+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
+        return df_index_time(intm_df_file)
+    elif '30minu' in str_metric:
+        # 分钟数据的索引转换不同其他，作单独处理
+        intm_list_files = os.listdir(par_str_path_minute)
+        intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if str_metric in v])
+        intm_df_file = pd.read_csv(par_str_path_minute+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0, low_memory=False, encoding='utf_8_sig')\
+                         .rename(index=lambda x:dt.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+        return intm_df_file
 
     else:
         print(">>> 未找到所请求的文件 %s ..."%str_metric)
@@ -221,6 +232,74 @@ def read_minutes_price(str_path, str_ticker):
         return None
 
 
+# 临时函数
+def tmpfunc_inner_clean(df_data, list_timesep):
+    ''' 临时函数 '''
+    df_new = df_data.copy(deep=True)
+    df_data['timesep'] = df_data.index
+    df_data['timesep'] = df_data['timesep'].apply(lambda x:x.hour*100+x.minute)
+    df_data = df_data[df_data['timesep'].isin(list_timesep)]
+    del df_data['timesep']
+
+    return df_data
+
+
+# 读取分钟数据
+def read_minute_data(str_path, list_ticker, list_date, list_timesep):
+    '''
+    读取分钟数据
+    '''
+    print(">>> reading data files...", str_hours(2))
+    data_df_stock_minute = pd.DataFrame()
+    for u in list_date:
+        print(">>> processing", u, str_hours(2))
+        tmp_df_minute = pd.read_csv(str_path+str(time_to_int(u))+'.csv', encoding='utf_8_sig').iloc[:,1:]
+        tmp_df_minute = tmp_df_minute[tmp_df_minute['ticker'].isin(list_ticker)]
+        data_df_stock_minute = data_df_stock_minute.append(tmp_df_minute)
+
+    data_df_stock_minute['timestamp'] = data_df_stock_minute['timestamp'].apply(lambda x:dt.datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
+    data_df_stock_minute['timesep']   = data_df_stock_minute['timestamp'].apply(lambda x:x.hour*100+x.minute)
+
+    print(">>> reconstructing data...", str_hours(2))
+    data_df_cb_close_minu    = pd.DataFrame()
+    data_df_cb_avgprice_minu = pd.DataFrame()
+    data_df_cb_amount_minu   = pd.DataFrame()
+    
+    for u in list_ticker:
+        try:
+            # print(">>> processing", u, str_hours(2))
+            # 读取原始的分钟级数据，并将空缺的分钟线填补上收盘价数据
+            # 需要注意，此处 tmp_df_cb 是股票/转债的分钟数据，源数据混杂了wind/taobao/eastmoney数据源
+            tmp_df_cb = data_df_stock_minute[data_df_stock_minute.ticker==u].set_index('timestamp').sort_index(ascending=True)
+            tmp_df_fill = tmp_df_cb['close'].fillna(method='pad')
+            for str_metric in ['open', 'close', 'high', 'low']:
+                tmp_df_cb[str_metric][tmp_df_cb['amount']<=0] = tmp_df_fill
+                
+            # 找出准确的时间分割点
+            tmp_df_cb['flag'] = tmp_df_cb['timesep'].apply(lambda x:True if x in list_timesep else False)
+            tmp_list_cut = list(sorted(tmp_df_cb[tmp_df_cb['flag']].index))
+
+            # 按照标定的时间节点切分
+            tmp_df_cb_sum              = df_cut_sum(tmp_df_cb, tmp_list_cut)
+            tmp_df_cb_sum['avg_price'] = tmp_df_cb_sum['amount'] / tmp_df_cb_sum['volume']
+            tmp_df_cb_sum              = tmp_df_cb_sum[['amount', 'avg_price']]
+            tmp_df_cb_sum['close']     = tmp_df_cb['close'].loc[tmp_df_cb_sum.index]
+            # tmp_df_cb_sum              = tmp_df_cb_sum.iloc[:-1]
+            
+            data_df_cb_close_minu    = pd.concat([data_df_cb_close_minu,    tmp_df_cb_sum[['close']].rename(    columns={'close':    u})], axis=1)
+            data_df_cb_avgprice_minu = pd.concat([data_df_cb_avgprice_minu, tmp_df_cb_sum[['avg_price']].rename(columns={'avg_price':u})], axis=1)
+            data_df_cb_amount_minu   = pd.concat([data_df_cb_amount_minu,   tmp_df_cb_sum[['amount']].rename(   columns={'amount':   u})], axis=1)
+        except:
+            data_df_cb_close_minu    = pd.concat([data_df_cb_close_minu,    pd.DataFrame(columns=[u])], axis=1)
+            data_df_cb_avgprice_minu = pd.concat([data_df_cb_avgprice_minu, pd.DataFrame(columns=[u])], axis=1)
+            data_df_cb_amount_minu   = pd.concat([data_df_cb_amount_minu,   pd.DataFrame(columns=[u])], axis=1)
+
+    data_df_cb_close_minu    = tmpfunc_inner_clean(data_df_cb_close_minu,    list_timesep)
+    data_df_cb_avgprice_minu = tmpfunc_inner_clean(data_df_cb_avgprice_minu, list_timesep)
+    data_df_cb_amount_minu   = tmpfunc_inner_clean(data_df_cb_amount_minu,   list_timesep)
+        
+    print(">>> outputing data...", str_hours(2))
+    return data_df_cb_close_minu, data_df_cb_avgprice_minu, data_df_cb_amount_minu
 
 
 
