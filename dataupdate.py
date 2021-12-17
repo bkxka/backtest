@@ -887,6 +887,52 @@ def update_minute(str_security, str_path_in, str_path_out, max_try=200):
     return 0
 
 
+# 更新30分钟数据
+def update_30minute(str_security, str_path_in, str_path_out):
+    ''' 更新30分钟数据 '''
+    
+    print("\n>>> %s| 开始处理 %s 数据..."%(str_hours(0), str_security))
+    set_list_timesep = [945, 1015, 1045, 1115, 1315, 1345, 1415, 1445]
+    data_df_tickers_cb    = ds.read_file("ticker_cb")
+
+    # 读取已存的数据
+    intm_df_minu_cb_vwap   = ds.read_file("30minu_"+str_security+"_vwap")
+    intm_df_minu_cb_close  = ds.read_file("30minu_"+str_security+"_close")
+    intm_df_minu_cb_amount = ds.read_file("30minu_"+str_security+"_amount")
+
+    # 需要更新的日期
+    intm_dt_date     = time_to_date(max(intm_df_minu_cb_vwap.index))
+    intm_list_update = [int_to_time(int(v.split('.')[0].split('_')[1])) for v in os.listdir(str_path_in+str_security+'/')]
+    intm_list_update = [v for v in intm_list_update if v>=intm_dt_date]
+    list_tickers     = list(data_df_tickers_cb.index) if (str_security=='cb') else list(set(data_df_tickers_cb.StockTicker))
+
+    # 读取更新日的分钟线数据并重新裁剪
+    tmp_df_minu_cb_close, tmp_df_minu_cb_vwap, tmp_df_minu_cb_amount\
+        = ds.read_minute_data(str_path_in+str_security+'/'+str_security+'_', list_tickers, intm_list_update, set_list_timesep)
+
+    # 股票数据需要映射成可转债代码
+    if str_security=='stock':
+        data_df_mapping       = data_df_tickers_cb[['StockTicker']]
+        tmp_df_minu_cb_vwap   = df_mapper_clip(data_df_mapping, tmp_df_minu_cb_vwap)
+        tmp_df_minu_cb_close  = df_mapper_clip(data_df_mapping, tmp_df_minu_cb_close)
+        tmp_df_minu_cb_amount = df_mapper_clip(data_df_mapping, tmp_df_minu_cb_amount)
+    
+    # 拼接保存（去掉重复的部分）
+    intm_df_minu_cb_vwap   = intm_df_minu_cb_vwap.append(  tmp_df_minu_cb_vwap  ).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
+    intm_df_minu_cb_close  = intm_df_minu_cb_close.append( tmp_df_minu_cb_close ).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
+    intm_df_minu_cb_amount = intm_df_minu_cb_amount.append(tmp_df_minu_cb_amount).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
+
+    print(">>> 将数据保存到本地...")
+    intm_str_date_new = str(time_to_int(time_to_date(max(intm_df_minu_cb_close.index))))
+    intm_df_minu_cb_vwap.to_csv(  str_path_out+intm_str_date_new+"_30minu_"+str_security+"_vwap.csv",   encoding='utf_8_sig')
+    intm_df_minu_cb_close.to_csv( str_path_out+intm_str_date_new+"_30minu_"+str_security+"_close.csv",  encoding='utf_8_sig')
+    intm_df_minu_cb_amount.to_csv(str_path_out+intm_str_date_new+"_30minu_"+str_security+"_amount.csv", encoding='utf_8_sig')
+
+    return 0
+    
+    
+
+
 
 if __name__=='__main__':
     
