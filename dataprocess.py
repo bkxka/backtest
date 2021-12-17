@@ -91,6 +91,7 @@ def get_stocks_pool_standard(df_close, df_st, df_floatmktcap, df_dateIPO, str_in
 
 
 # 标准化可转债池操作
+# 修订该函数，使之支持与日线不符的时间格式
 def get_cbs_pool_standard(df_amount_stock, df_amount_cb, df_ticker_cb):
     '''
     可转债池标准：
@@ -110,7 +111,9 @@ def get_cbs_pool_standard(df_amount_stock, df_amount_cb, df_ticker_cb):
             tmp_date_start  = max(min(tmp_df_amount_stock.index), min(tmp_df_amount_cb.index))
             tmp_date_end    = min(max(tmp_df_amount_stock.index), max(tmp_df_amount_cb.index), 
                                   df_ticker_cb.loc[u, ['DateRedeemNotice', 'InterestDateEnd']].min())
-            tmp_df_trade_cycle = df_amount_cb[[u]].loc[tmp_date_start:tmp_date_end].applymap(lambda x:1)
+            # tmp_df_trade_cycle = df_amount_cb[[u]].loc[tmp_date_start:tmp_date_end].applymap(lambda x:1)
+            tmp_list_index = [v for v in df_amount_cb.index if (v>=tmp_date_start and v<=tmp_date_end)]
+            tmp_df_trade_cycle = df_amount_cb[[u]].loc[tmp_list_index].applymap(lambda x:1)
         tmp_df_cb_pool = pd.concat([tmp_df_cb_pool, tmp_df_trade_cycle], axis=1).fillna(0)
     
     return tmp_df_cb_pool
