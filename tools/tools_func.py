@@ -43,7 +43,7 @@ str_to_int  = lambda x:int(x.split('-')[0])*10000 + int(x.split('-')[1])*100 + i
                        int(x.split('/')[0])*10000 + int(x.split('/')[1])*100 + int(x.split('/')[2].split(' ')[0]) if '/' in x else\
                        int(x)
 
-
+time_to_date = lambda x:dt.datetime(x.year, x.month, x.day)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
