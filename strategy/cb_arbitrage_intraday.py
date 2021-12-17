@@ -128,7 +128,7 @@ def read_minute_data(str_path, list_ticker, list_date, list_timesep):
     print(">>> reading data files...", str_hours(2))
     data_df_stock_minute = pd.DataFrame()
     for u in list_date:
-        # print(">>> processing", u)
+        print(">>> processing", u, str_hours(2))
         tmp_df_minute = pd.read_csv(str_path+str(time_to_int(u))+'.csv', encoding='utf_8_sig').iloc[:,1:]
         tmp_df_minute = tmp_df_minute[tmp_df_minute['ticker'].isin(list_ticker)]
         data_df_stock_minute = data_df_stock_minute.append(tmp_df_minute)
@@ -143,6 +143,7 @@ def read_minute_data(str_path, list_ticker, list_date, list_timesep):
     
     for u in list_ticker:
         try:
+            # print(">>> processing", u, str_hours(2))
             # 读取原始的分钟级数据，并将空缺的分钟线填补上收盘价数据
             # 需要注意，此处 tmp_df_cb 是股票/转债的分钟数据，源数据混杂了wind/taobao/eastmoney数据源
             tmp_df_cb = data_df_stock_minute[data_df_stock_minute.ticker==u].set_index('timestamp').sort_index(ascending=True)
