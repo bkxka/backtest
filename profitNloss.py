@@ -5,7 +5,7 @@ Created on Sat Feb  6 10:18:40 2021
 @author: 好鱼
 """
 
-from datetime import *
+import datetime as dt
 import pandas as pd
 import numpy as np
 import math
@@ -100,6 +100,7 @@ def excess_return(df_netvalue, df_market, method, flt_hddgeRate):
     else:
         return 0
     
+    
 # 根据证券的相对仓位和日收益率计算合并收益率(不计交易成本)
 def combine_netvalue_position(intm_df_signal_final, intm_df_return_daily):
     ''' 据证券的相对仓位和日收益率计算合并收益率(不计交易成本) '''
@@ -109,6 +110,32 @@ def combine_netvalue_position(intm_df_signal_final, intm_df_return_daily):
     intm_df_return_accum = (intm_df_return_sum.fillna(0) + 1).cumprod()
     
     return intm_df_return_accum
+
+
+# 根据分钟级数据计算日度数据（保留当日最后一个分钟的数据）
+def minutes_daily_return(df_data_in, keep='last'):
+    ''' 
+    根据分钟级数据计算日度数据（保留当日最后一个分钟的数据，或其他计算方式） 
+    '''
+    
+    df_data = df_data_in.copy(deep=True).sort_index(ascending=True)
+    df_data['tmp_date'] = df_data.index
+    df_data['tmp_date'] = df_data['tmp_date'].apply(lambda x:dt.datetime(x.year, x.month, x.day))
+    if keep in ['first', 'last']:
+        df_data = df_data.drop_duplicates(subset='tmp_date',keep=keep).set_index('tmp_date')
+    elif keep == 'mean':
+        df_data = df_data.groupby('tmp_date').mean()
+    elif keep == 'median':
+        df_data = df_data.groupby('tmp_date').median()
+    elif keep == 'sum':
+        df_data = df_data.groupby('tmp_date').sum()
+    elif keep == 'max':
+        df_data = df_data.groupby('tmp_date').max()
+    elif keep == 'min':
+        df_data = df_data.groupby('tmp_date').min()
+    
+    return df_data
+    
 
 
 
