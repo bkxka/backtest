@@ -1,8 +1,3 @@
-This is wangdu working on A-share quantum strategy research.
-testing a new process
-third time to test commit process
-fourth time to test
-fifth time to test
-sixth time to test
-testing how to create new branch
-creating a new branch is quick and simple
+This is bkxka working on A-share quantum strategy research. It is only used for private purposes, any contributions are appreciated but replies are not guaranteed. 
+
+The author allows any kind of usage for users themselves, no authorization is necessary.
