@@ -182,7 +182,7 @@ def wind_func_wset(str_metric, str_start_date, str_end_date):
         tmp_str_quarter = 's1' if tmp_int_month == 3 else 'h1' if tmp_int_month == 6 else\
                           's3' if tmp_int_month == 9 else 'y1' if tmp_int_month == 12 else None
         tmp_raw_price = w.wset(str_metric,"orderby=报告期;year="+tmp_str_year+";period="+tmp_str_quarter+";sectorid=a001010100000000")
-    elif str_metric in ['000300.SH', '000905.SH', '000852.SH']:
+    elif str_metric in ['000300.SH', '000905.SH', '000852.SH', '000832.CSI']:
         tmp_raw_price = w.wset("indexconstituent",'date='+str_start_date+';windcode='+str_metric)
     elif str_metric in ['IF.CFE', 'IH.CFE', 'IC.CFE']:
         tmp_raw_price = w.wset("futurecc","startdate="+str_start_date+";enddate="+str_end_date+";wind_code="+str_metric)
