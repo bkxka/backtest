@@ -57,7 +57,7 @@ def read_file(str_metric):
         intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_price_'+str_metric+'.csv'])
         intm_df_file = pd.read_csv(par_str_path_price+str(intm_int_last_date)+'_price_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
         return df_index_time(intm_df_file)
-    elif str_metric in ['announceDate', 'netQProfit', 'netEquity', 'title']:
+    elif str_metric in ['announceDate', 'netQProfit', 'netQCashflowOper', 'netEquity', 'title']:
         intm_list_files = os.listdir(par_str_path_report)
         intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_report_'+str_metric+'.csv'])
         intm_df_file = pd.read_csv(par_str_path_report+str(intm_int_last_date)+'_report_'+str_metric+'.csv', index_col=0, low_memory=False, encoding='utf_8_sig')

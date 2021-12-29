@@ -93,9 +93,12 @@ def wind_func_wss(str_tickers_piece, str_metric, str_date=None):
             tmp_raw_price = w.wss(str_tickers_piece, "share_N", "unit=1;tradeDate="+str_date)
         elif str_metric == 'announceDate':
             tmp_raw_price = w.wss(str_tickers_piece, "stm_issuingdate","rptDate="+str_date)
+        # 此处净利润为单季度归属于母公司股东的净利润
         elif str_metric == 'netQProfit':
-            # 此处净利润为单季度归属于母公司股东的净利润
             tmp_raw_price = w.wss(str_tickers_piece, "qfa_np_belongto_parcomsh","unit=1;rptDate="+str_date+";rptType=1")
+        # 此处净利润为单季度经营性现金流净额
+        elif str_metric == 'netQCashflowOper':
+            tmp_raw_price = w.wss(str_tickers_piece, "qfa_net_cash_flows_oper_act","unit=1;rptDate="+str_date+";rptType=1")
         elif str_metric == 'netEquity':
             tmp_raw_price = w.wss(str_tickers_piece, "eqy_belongto_parcomsh","unit=1;rptDate="+str_date+";rptType=1")
         elif 'buy' in str_metric:
