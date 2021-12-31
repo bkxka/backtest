@@ -428,9 +428,7 @@ def update_market_bonus():
     # 提取应更新的日期信息
     tmp_df_data_update = tmp_df_data[tmp_df_data['progress']!='实施完毕']
     tmp_list_quarter_update = list(set(tmp_df_data_update['reporting_date']))
-    data_list_date = ds.get_newest_date_list()
-    while max(data_list_date)>next_quarter(max(tmp_list_quarter_update)):
-        tmp_list_quarter_update.append(next_quarter(max(tmp_list_quarter_update)))
+    tmp_list_quarter_update.append(next_quarter(tmp_df_data['reporting_date'].max()))
 
     for u in tmp_list_quarter_update:
         print(">>> %s| 正在提取 %s 的 %s 数据..."%(str_hours(0), time_to_str(u), str_metric))
