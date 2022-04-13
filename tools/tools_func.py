@@ -64,6 +64,15 @@ df_diff        = lambda x:x.abs().sum(axis=1).sum()                             
 df_index_norm  = lambda x:(x.T / x.sum(axis=1).T).T                                          # 纵向归一化（同行的数据之和为1）
 
 
+# dataframe数值过滤
+def df_filter(df_data, str_rule, flt_value):
+    ''' dataframe数值过滤 '''
+    df_result = df_data.copy(deep=True)
+    df_result[eval('df_result' + str_rule)] = flt_value
+    
+    return df_result
+    
+
 # 分值变换
 def df_rescale_score(df_pool, df_scores, method):
     ''' 
@@ -164,6 +173,21 @@ def str_hours(x=0):
     if x==2:
         return str(dt.datetime.now())[11:19]
 
+# 根据系统时间输出判断值(注意这个时间是含日期的)
+def time_bool(dt_a=None, dt_b=None):
+    ''' 根据系统时间输出判断值(注意这个时间是含日期的) '''
+    dt_now = dt.datetime.now()
+    if dt_a is None:
+        if dt_b is None:
+            return True
+        else:
+            return True if dt_now<=dt_b else False
+    else:
+        if dt_b is None:
+            return True if dt_now>=dt_a else False
+        else:
+            return True if (dt_now>=dt_a and dt_now<=dt_b) else False
+    
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
