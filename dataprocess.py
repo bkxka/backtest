@@ -183,6 +183,24 @@ def cross_to_sequence(list_tradingDays, data_df_industry_raw):
     return intm_df_industry
 
 
+# 将结构化的股票成分-权重数据转化成股票权重二维表
+def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_list_tradingDays):
+    ''' 将结构化的股票成分-权重数据转化成股票权重二维表 '''
+    
+    if (list(data_df_index_stocks.index) != list(data_df_index_weight.index))\
+        or (list(data_df_index_stocks.columns) != list(data_df_index_weight.columns)):
+        print(">>> wrong data imput ...")
+        return None
+
+    data_df_index_constitution = pd.DataFrame()
+    for u in data_df_index_weight.index:
+        tmp_df_cons = pd.concat([data_df_index_stocks.loc[u].to_frame().rename(columns={u:0}), data_df_index_weight.loc[u]], axis=1).dropna().set_index(0)
+        data_df_index_constitution = data_df_index_constitution.append(tmp_df_cons.T).fillna(0)
+        
+    rst_df_index_constitution = df_index_norm(cross_to_sequence(data_list_tradingDays, data_df_index_constitution))
+    return rst_df_index_constitution
+
+
 # 获取调仓日列表
 def select_tradingDays(list_days, dt_start, int_period, int_cut):
     ''' 获取调仓日列表 '''
