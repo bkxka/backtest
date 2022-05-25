@@ -682,6 +682,30 @@ def update_ticker_list():
     return 0
 
 
+# 更新期权列表
+def update_ticker_option():
+    ''' 更新全市场期权列表信息，最新数据 '''
+    
+    print(">>> %s| 更新股期权代码列表..."%str_hours(0))
+    intm_df_ticker_list = ds.read_file('ticker_option')
+
+    tmp_raw_510050 = wind_func_wset('ticker_option_510050.OF', time_to_str(par_dt_today), 0)
+    tmp_raw_510300 = wind_func_wset('ticker_option_510300.OF', time_to_str(par_dt_today), 0)
+    tmp_raw_159919 = wind_func_wset('ticker_option_159919.OF', time_to_str(par_dt_today), 0)
+    
+    tmp_df_tickers = pd.DataFrame(tmp_raw_510050.Data, index=tmp_raw_510050.Fields, columns=tmp_raw_510050.Codes).T\
+             .append(pd.DataFrame(tmp_raw_510300.Data, index=tmp_raw_510300.Fields, columns=tmp_raw_510300.Codes).T)\
+             .append(pd.DataFrame(tmp_raw_159919.Data, index=tmp_raw_159919.Fields, columns=tmp_raw_159919.Codes).T)
+    
+    intm_df_ticker_list = intm_df_ticker_list.append(tmp_df_tickers).sort_values('option_name', ascending=True)
+    intm_df_ticker_list['strike_price'] = intm_df_ticker_list['strike_price'].apply(lambda x:round(x,3))
+    intm_df_ticker_list = intm_df_ticker_list.drop(columns=['exe_type', 'expiredate', 'settle_method']).drop_duplicates(keep='first')
+    intm_df_ticker_list.index = range(len(intm_df_ticker_list))
+    
+    intm_df_ticker_list.to_csv(par_str_path_ticker+str(time_to_int(par_dt_today))+'_ticker_option.csv', encoding='utf_8_sig')
+    return 0
+
+
 # 更新股票涨跌停板信息
 def update_trade_states_dayLimit():
     ''' 更新涨跌停板信息 '''
