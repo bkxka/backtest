@@ -24,11 +24,11 @@ def get_df_nbmf(int_lbw=90):
     data_df_close        = ds.load_price('close')
     data_df_dayReturn    = ds.load_price('dayReturn')
     data_df_floatAmktcap = ds.load_price('floatAmktcap')
-    data_df_shszhkHold   = ds.load_price('shszhkHold')
+    data_df_shszhkHold   = ds.load_price('shszhkHold').replace([0], np.nan)
     data_df_shszhkBuy    = ds.get_netBuy(data_df_shszhkHold, data_df_close, data_df_dayReturn)
         
-    tmp_df_score_raw = (data_df_shszhkBuy / data_df_floatAmktcap).replace(set_list_null, 0)
-    factor_df_nbmf   = tmp_df_score_raw.rolling(window=int_lbw, min_periods=1).sum().fillna(0)
+    tmp_df_score_raw = (data_df_shszhkBuy / data_df_floatAmktcap).replace(set_list_null, np.nan)
+    factor_df_nbmf   = tmp_df_score_raw.rolling(window=int_lbw, min_periods=1).sum()#.fillna(0)
     
     return factor_df_nbmf
 
