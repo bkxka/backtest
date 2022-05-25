@@ -846,8 +846,51 @@ def update_index_constituent(str_index, str_path):
         return 0
 
 
+# 更新期权的分钟数据
+def update_minute_option(path_option, path_etf):
+    '''
+    更新期权的分钟数据   
+    '''
+    dt_date = max(ds.get_newest_date_list())
+    
+    print("\n>>> %s| 开始处理期权分钟数据..."%str_hours(0))
+    tmp_df_tickers_option = ds.load_tickers('option')[ds.load_tickers('option').last_tradedate>=dt_date-datetime.timedelta(days=10)]
+    tmp_df_tickers_option = tmp_df_tickers_option[['option_code', 'last_tradedate']].drop_duplicates(keep='first')
+    for ii in range(len(tmp_df_tickers_option)):
+        print(' -> '+str(ii), end="\r")
+        str_date_end   = time_to_str(min(tmp_df_tickers_option['last_tradedate'].iloc[ii], dt_date))
+        str_date_start = time_to_str(dt_date - datetime.timedelta(days=365))
+        str_ticker     = tmp_df_tickers_option.option_code.iloc[ii]
+        
+        tmp_df_minute = wind_func_wsi(str_ticker, str_date_start, str_date_end)
+        if len(tmp_df_minute)>10:
+            tmp_df_minute['ticker'] = str_ticker
+            tmp_str_day = str(time_to_int(tmp_df_minute.index.max()))
+            tmp_df_minute.to_csv(path_option+tmp_str_day+'_'+str_ticker+'.csv', encoding='utf_8_sig')
+            
+    print("\n>>> %s| 开始处理标的ETF的分钟数据..."%str_hours(0))
+    tmp_df_price   = ds.read_file("minu_etf")
+    str_date_start = time_to_str(tmp_df_price.index.max() + datetime.timedelta(days=1))
+    str_date_end   = time_to_str(dt_date)
+    
+    tmp_df_510050 = wind_func_wsi("510050.SH", str_date_start, str_date_end)
+    tmp_df_510050['ticker'] = "510050.OF"
+    
+    tmp_df_510300 = wind_func_wsi("510300.SH", str_date_start, str_date_end)
+    tmp_df_510300['ticker'] = "510300.OF"
+
+    tmp_df_159919 = wind_func_wsi("159919.SZ", str_date_start, str_date_end)
+    tmp_df_159919['ticker'] = "159919.OF"
+    
+    tmp_df_price = tmp_df_price.append(tmp_df_510050).append(tmp_df_510300).append(tmp_df_159919)
+    tmp_df_price.to_csv(path_etf+str(time_to_int(dt_date))+'_minu_etf.csv', encoding='utf_8_sig')
+    print(">>> 将数据保存到本地...")
+
+    return 0
+
+
 # 更新分钟数据
-def update_minute(str_security, str_path_in, str_path_out, max_try=200):
+def update_minute_day(str_security, str_path_in, str_path_out, max_try=200):
     '''
     更新分钟数据
     '''
