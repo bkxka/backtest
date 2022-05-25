@@ -195,6 +195,9 @@ def wind_func_wset(str_metric, str_start_date, str_end_date):
         tmp_raw_price = w.wset("sectorconstituent","date="+str_start_date+";sectorid=a001010m00000000")
     elif str_metric == 'ticker_cb':
         tmp_raw_price = w.wset("newbondissueview","startdate="+str_start_date+";enddate="+str_end_date+";datetype=listingdate;bondtype=convertiblebonds;dealmarket=allmarkets;maingrade=all")
+    elif 'ticker_option' in str_metric:
+        str_target = str_metric.split('_')[-1]
+        tmp_raw_price = w.wset("optionchain","date="+str_start_date+";us_code="+str_target+";option_var=全部;call_put=全部")
     elif str_metric == 'st':
         tmp_raw_price = w.wset("sectorconstituent","date="+str_start_date+";sectorid=1000006526000000")
     elif str_metric == 'shhkFlow':
