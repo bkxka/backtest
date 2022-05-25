@@ -26,16 +26,16 @@ def layer_test(data_df_stockPool, data_df_score, data_df_dayReturn, set_dt_begin
 
     data_dict_slices = dp.get_df_slices(data_df_score, data_list_tradingDays_repo_signal, data_df_stockPool, int_layers, int_signal=1)
     data_dict_return = {v:((data_dict_slices[v]*data_df_dayReturn).fillna(0).sum(axis=1)\
-                           / data_dict_slices[v].sum(axis=1) / 100 + 1).cumprod().loc[set_dt_begin_date:].fillna(1) for v in data_dict_slices}
-    data_df_return_base = ((data_df_stockPool*data_df_dayReturn).fillna(0).sum(axis=1) / data_df_stockPool.sum(axis=1) / 100 + 1).cumprod()
-    data_dict_return_excess = {v:data_dict_return[v]/data_df_return_base for v in data_dict_return}
+                           / data_dict_slices[v].sum(axis=1) / 100).cumsum().loc[set_dt_begin_date:].fillna(0) for v in data_dict_slices}
+    data_df_return_base = ((data_df_stockPool*data_df_dayReturn).fillna(0).sum(axis=1) / data_df_stockPool.sum(axis=1) / 100).cumsum()
+    data_dict_return_excess = {v:data_dict_return[v]-data_df_return_base for v in data_dict_return}
     
     data_df_return_excess = pd.DataFrame()
     for u in data_dict_return_excess:
         data_df_return_excess = pd.concat([data_df_return_excess, data_dict_return_excess[u].to_frame().rename(columns={0:u})], axis=1)
         
     data_df_return_excess = data_df_return_excess.loc[set_dt_begin_date:]
-    data_df_return_excess = data_df_return_excess / data_df_return_excess.iloc[0]
+    data_df_return_excess = data_df_return_excess - data_df_return_excess.iloc[0]
     
     return data_df_return_excess
     
