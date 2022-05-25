@@ -34,6 +34,7 @@ if True:
     par_str_path_market = par_str_path + '/market/'
     par_str_path_minute = par_str_path + '/minute/temp/'
     # par_str_path_bulletin = par_str_path + '/bulletin/'
+    par_str_path_option = par_str_path + '/option/'
     par_str_path_moneyflow = par_str_path_price + 'moneyflow/'
 
 
@@ -114,6 +115,16 @@ def read_file(str_metric):
             intm_df_file['DateIPO']    = intm_df_file['DateIPO'].apply(lambda x:str_to_time(x[:10]) if type(x)==str else x)
             intm_df_file['DateDelist'] = intm_df_file['DateDelist'].apply(lambda x:str_to_time(x) if x!='0' else x)
             intm_df_file['DateDelist'][intm_df_file['DateDelist']=='0'] = np.nan
+        if 'option' in str_metric:
+            intm_df_file[['first_tradedate', 'last_tradedate']] = \
+            intm_df_file[['first_tradedate', 'last_tradedate']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
+        return intm_df_file
+    elif 'minu' in str_metric:
+        # 分钟数据的索引转换不同其他，作单独处理
+        intm_list_files = os.listdir(par_str_path_minute)
+        intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if str_metric in v])
+        intm_df_file = pd.read_csv(par_str_path_minute+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0, low_memory=False, encoding='utf_8_sig')\
+                         .rename(index=lambda x:dt.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
         return intm_df_file
     # 注意可能会和分钟线数据混同
     elif 'cb_' in str_metric and 'minu' not in str_metric:
@@ -121,13 +132,6 @@ def read_file(str_metric):
         intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
         intm_df_file = pd.read_csv(par_str_path_cb+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
         return df_index_time(intm_df_file)
-    elif '30minu' in str_metric:
-        # 分钟数据的索引转换不同其他，作单独处理
-        intm_list_files = os.listdir(par_str_path_minute)
-        intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if str_metric in v])
-        intm_df_file = pd.read_csv(par_str_path_minute+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0, low_memory=False, encoding='utf_8_sig')\
-                         .rename(index=lambda x:dt.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
-        return intm_df_file
 
     else:
         print(">>> 未找到所请求的文件 %s ..."%str_metric)
