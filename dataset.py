@@ -182,7 +182,7 @@ def get_netBuy(data_df_hold, data_df_close, data_df_dayReturn):
     data_df_hold_mktcap_old = data_df_hold_mktcap.shift(1) * (1 + data_df_dayReturn/100)
     data_df_netBuy = data_df_hold_mktcap - data_df_hold_mktcap_old
     
-    return data_df_netBuy.fillna(0)
+    return data_df_netBuy
 
 
 # 导入每只股票季度数据
