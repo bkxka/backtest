@@ -135,7 +135,8 @@ def trade_model(stgy_df_target_position, df_close, df_dayReturn, df_dayLimit, df
 # 修改了计算交易量/交易成本的方法，实际上废弃了 df_trade_record 参数
 # amountOneSide 实际指的是总的交易金额（含买入和卖出金额之和）
 # 函数支持对非连续、日间与日内混杂的净值曲线计算
-def trade_netvalue(df_actual_position, df_trade_record, list_tradingDays, df_close, flt_fee, flt_impact_cost, df_price_trade=None):
+# 修订函数，使之支持复利与单利两种计算模式
+def trade_netvalue(df_actual_position, df_trade_record, list_tradingDays, df_close, flt_fee, flt_impact_cost, df_price_trade=None, interest='compound'):
     ''' 根据实际持仓，将持仓转变为股票组合的净值 '''
 
     df_netvalue = pd.DataFrame(0, index=list_tradingDays, columns=['netvalueRaw', 'amountOneSide', 'tradeCost', 'costFactor', 'tradeFactor', 'netvalueCosted'])
@@ -146,15 +147,18 @@ def trade_netvalue(df_actual_position, df_trade_record, list_tradingDays, df_clo
     tmp_df_trade_bias          = df_close.applymap(lambda x:0) if (df_price_trade is None) else (df_price_trade / df_close - 1)
     tmp_df_trade_bias['cash']  = 0
     tmp_df_trade_amount        = df_actual_position - df_index_norm(df_actual_position.shift(1) * df_close / df_close.shift(1))
-    df_netvalue['tradeFactor'] = (1 - (tmp_df_trade_amount * tmp_df_trade_bias).fillna(0).sum(axis=1)).cumprod()
-    
-    # 交易成本的测算：计入交易量
-    # df_netvalue = pd.DataFrame(0, index=list_tradingDays, columns=['netvalueRaw', 'amountOneSide', 'tradeCost', 'costFactor', 'netvalueCosted'])
-    # df_netvalue.loc[df_trade_record.index, 'amountOneSide'] = df_trade_record['tradeAmountOneSide']
     df_netvalue.loc[df_actual_position.index, 'amountOneSide'] = tmp_df_trade_amount.abs().sum(axis=1)
     df_netvalue['tradeCost']   = df_netvalue['amountOneSide'] * (flt_fee + flt_impact_cost)
-    df_netvalue['costFactor']  = (1 - df_netvalue['tradeCost']).cumprod()
-    df_netvalue['netvalueRaw'] = 1
+    
+    # 交易成本的测算：计入交易量
+    if interest == 'compound':
+        df_netvalue['tradeFactor'] = (1 - (tmp_df_trade_amount * tmp_df_trade_bias).fillna(0).sum(axis=1)).cumprod()
+        df_netvalue['costFactor']  = (1 - df_netvalue['tradeCost']).cumprod()
+        df_netvalue['netvalueRaw'] = 1
+    elif interest == 'simple':
+        df_netvalue['tradeFactor'] = (0 - (tmp_df_trade_amount * tmp_df_trade_bias).fillna(0).sum(axis=1)).cumsum()
+        df_netvalue['costFactor']  = - df_netvalue['tradeCost'].cumsum()
+        df_netvalue['netvalueRaw'] = 0
     
     ii, jj = 1, 0
     tmp_dt_base_date = df_actual_position.index[jj]
@@ -165,12 +169,18 @@ def trade_netvalue(df_actual_position, df_trade_record, list_tradingDays, df_clo
             jj = min(jj+1, len(df_actual_position)-1)
             
         tmp_df_dayReturn = df_actual_position.loc[tmp_dt_base_date] * df_close.loc[list_tradingDays[ii]] / df_close.loc[tmp_dt_base_date] 
-        df_netvalue['netvalueRaw'].iloc[ii] = df_netvalue['netvalueRaw'].loc[tmp_dt_base_date] * tmp_df_dayReturn.dropna().sum()
+        if interest == 'compound':
+            df_netvalue['netvalueRaw'].iloc[ii] = df_netvalue['netvalueRaw'].loc[tmp_dt_base_date] * tmp_df_dayReturn.dropna().sum()
+        elif interest == 'simple':
+            df_netvalue['netvalueRaw'].iloc[ii:] = df_netvalue['netvalueRaw'].loc[tmp_dt_base_date] + tmp_df_dayReturn.dropna().sum() - 1
         
         ii = ii + 1
     
     # 计算交易成本修正后的股票组合净值
-    df_netvalue['netvalueCosted'] = df_netvalue['costFactor'] * df_netvalue['tradeFactor'] * df_netvalue['netvalueRaw']
+    if interest == 'compound':
+        df_netvalue['netvalueCosted'] = df_netvalue['netvalueRaw'] * df_netvalue['costFactor'] * df_netvalue['tradeFactor']
+    elif interest == 'simple':
+        df_netvalue['netvalueCosted'] = df_netvalue['netvalueRaw'] + df_netvalue['costFactor'] + df_netvalue['tradeFactor']
     
     return df_netvalue
     
