@@ -189,7 +189,7 @@ def cross_to_sequence(list_tradingDays, data_df_industry_raw):
 
 
 # 将结构化的股票成分-权重数据转化成股票权重二维表
-def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_list_tradingDays):
+def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_close_cb):
     ''' 将结构化的股票成分-权重数据转化成股票权重二维表 '''
     
     if (list(data_df_index_stocks.index) != list(data_df_index_weight.index))\
@@ -202,8 +202,23 @@ def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_list
         tmp_df_cons = pd.concat([data_df_index_stocks.loc[u].to_frame().rename(columns={u:0}), data_df_index_weight.loc[u]], axis=1).dropna().set_index(0)
         data_df_index_constitution = data_df_index_constitution.append(tmp_df_cons.T).fillna(0)
         
-    rst_df_index_constitution = df_index_norm(cross_to_sequence(data_list_tradingDays, data_df_index_constitution))
-    return rst_df_index_constitution
+    tmp_df_index_constitution = cross_to_sequence(list(data_df_close_cb.index), data_df_index_constitution)
+
+    # 将权重股重新组织成二维表的标准形式
+    data_df_index_constitution = pd.DataFrame()
+    for u in data_df_close_cb.columns:
+        data_df_index_constitution = pd.concat([data_df_index_constitution, 
+                                                tmp_df_index_constitution[[u]] if u in tmp_df_index_constitution.columns else pd.DataFrame(columns=[u])], axis=1)
+    # 根据转债价格变动校正指数权重
+    tmp_u = data_df_index_constitution.index[0]
+    for u in data_df_index_constitution.index:
+        if u in data_df_index_stocks.index:
+            tmp_u = u
+        else:
+            data_df_index_constitution.loc[u] = data_df_index_constitution.loc[u] * (data_df_close_cb.loc[u] / data_df_close_cb.loc[tmp_u])
+    data_df_index_constitution = df_index_norm(data_df_index_constitution).replace([np.inf, -np.inf, np.nan], 0)
+
+    return data_df_index_constitution
 
 
 # 获取调仓日列表
