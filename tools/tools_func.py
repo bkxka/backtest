@@ -93,6 +93,32 @@ def df_rescale_score(df_pool, df_scores, method):
     return tmp_df_score
 
 
+# 两步赋分函数
+def df_twofold_score(df_scores, limit_in, limit_out):
+    '''
+    两步赋分函数
+    ----------
+    df_scores : 原始分
+    limit_in : 阈值a，高于此阈值赋1分
+    limit_out : 阈值b，低于此阈值赋0分，否则延续前一期的分数
+    -------
+    df_result : 赋分后的返回结果
+    '''
+    tmp_df_in   = df_scores > limit_in
+    tmp_df_keep = df_scores > limit_out
+    df_result   = pd.DataFrame(0, index=df_scores.index, columns=df_scores.columns)
+    df_result[tmp_df_in] = 1
+
+    for ii in range(1, len(df_result)):
+        
+        tmp_df_keep_ii = tmp_df_keep.iloc[ii][tmp_df_keep.iloc[ii]].index
+        df_result[tmp_df_keep_ii].iloc[ii] = df_result[tmp_df_keep_ii].iloc[ii-1]
+        df_result.iloc[ii] += tmp_df_in.iloc[ii]
+
+    df_result[df_result>0] = 1
+    return df_result
+
+
 # 数据聚合切分
 def df_cut_sum(df_data, list_sep):
     '''
