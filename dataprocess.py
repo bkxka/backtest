@@ -389,14 +389,15 @@ def get_df_slices(df_scores, list_dates_signal, df_stock_pool, int_layers, int_s
     将股票池按照因子分值进行分组
     默认信号延迟一天：即当天尾盘按照昨日收盘信息调仓；int_signal=0表示按照当天收盘信息调仓
     '''
-    tmp_list_stocks = list(df_stock_pool.sum(axis=0)[df_stock_pool.sum(axis=0)>0].index)
-    dict_result = {v:pd.DataFrame(0, index=df_stock_pool.index, columns=tmp_list_stocks) for v in range(int_layers)}
+    dict_result = {v:pd.DataFrame(0, index=df_stock_pool.index, columns=df_stock_pool.columns) for v in range(int_layers)}
     for u in list_dates_signal:
-        tmp_list_rank = list(df_scores.loc[u].dropna().sort_values(ascending=True).index)
+        tmp_df_pool = df_stock_pool.loc[u][df_stock_pool.loc[u]>0]                      # 选取股票池中可选股票
+        tmp_df_rank = df_scores.loc[u, tmp_df_pool.index].sort_values(ascending=True)   # 将当天股票池中股票按照分值排序
+        len_piece   = len(tmp_df_pool)//int_layers
         for ii in range(int_layers):
-            tmp_head, tmp_tail = math.ceil(ii*len(tmp_list_rank)/int_layers), math.ceil((ii+1)*len(tmp_list_rank)/int_layers)
+            tmp_head, tmp_tail = ii*len_piece, (ii+1)*len_piece
             dict_result[ii].loc[u+dt.timedelta(days=int_signal):] = 0
-            dict_result[ii].loc[u+dt.timedelta(days=int_signal):, tmp_list_rank[tmp_head:tmp_tail]] = 1
+            dict_result[ii].loc[u+dt.timedelta(days=int_signal):, tmp_df_rank.index[tmp_head:tmp_tail]] = 1
     
     return dict_result
 
