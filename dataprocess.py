@@ -148,13 +148,18 @@ def get_index_industry_weight(df_index_stocks, df_index_weight, df_industry):
     for u in df_index_weight.index:
         
         tmp_df_weight    = df_index_weight.loc[u].rename(index=df_index_stocks.loc[u].to_dict()).to_frame()
+        tmp_df_weight    = tmp_df_weight.loc[tmp_df_weight.index.isna()==False]
         tmp_df_industry  = df_industry.loc[u].to_frame().rename(columns={u:'industry'})
         tmp_df_aggregate = pd.concat([tmp_df_weight, tmp_df_industry], axis=1).fillna(0).groupby('industry').sum()
         data_df_index_industry = data_df_index_industry.append(tmp_df_aggregate.T)
 
     # 权重数据重新整理并归一化
-    data_df_index_industry = data_df_index_industry[[v for v in data_df_index_industry.columns if v[0] not in ['0', '-']]]
-    data_df_index_industry = (data_df_index_industry.T / data_df_index_industry.sum(axis=1)).T
+    # data_df_index_industry = data_df_index_industry[[v for v in data_df_index_industry.columns if v[0] not in ['0', '-']]]
+    # data_df_index_industry = (data_df_index_industry.T / data_df_index_industry.sum(axis=1)).T
+    data_df_index_industry = data_df_index_industry[[v for v in data_df_index_industry.columns if (v!=0 and v[0] not in ['0', '-'])]]
+    data_df_index_industry['其他'] = data_df_index_industry.sum(axis=1).apply(lambda x:max(0, 100-x))
+    data_df_index_industry = df_index_norm(data_df_index_industry)
+    
     return data_df_index_industry.fillna(0)
     
 
