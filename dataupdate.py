@@ -198,7 +198,7 @@ def update_index_close(str_today):
 
 
 # 更新每日的陆港通双向资金流入信息
-def update_market_shszhkFlow():
+def update_market_shszhkFlow(str_path):
     ''' 更新每日的陆港通双向资金流入信息 '''
     # 读取现有的行情数据
     str_metric = 'shszhkFlow'
@@ -233,7 +233,7 @@ def update_market_shszhkFlow():
                 
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
     print(">>> 将数据保存到本地...")
-    intm_df_price.to_csv(par_str_path_market+str(time_to_int(max(intm_df_price.index)))+'_market_'+str_metric+'.csv', encoding='utf_8_sig')
+    intm_df_price.to_csv(str_path+str(time_to_int(max(intm_df_price.index)))+'_market_'+str_metric+'.csv', encoding='utf_8_sig')
         
     return 0
 
@@ -417,7 +417,7 @@ def update_beta(str_metric, period, str_path):
 
 
 # 更新红利信息
-def update_market_bonus():
+def update_market_bonus(str_path):
     ''' 更新红利信息 '''
     str_metric = 'bonus'
     print("\n>>> %s| 更新%s数据..."%(str_hours(0),str_metric))
@@ -440,14 +440,14 @@ def update_market_bonus():
     print(">>> 将数据保存到本地...")
     tmp_df_data = tmp_df_data.sort_values(by='reporting_date')
     tmp_df_data.index = range(len(tmp_df_data))
-    tmp_str_file_name = str(time_to_int(max(tmp_df_data['reporting_date'])))+'_market_bonus.csv'
-    tmp_df_data.to_csv(par_str_path_market+tmp_str_file_name, encoding='utf_8_sig')
+    tmp_str_file_name = str(time_to_int(max(tmp_df_data['reporting_date'])))+'_report_bonus.csv'
+    tmp_df_data.to_csv(str_path+tmp_str_file_name, encoding='utf_8_sig')
 
     return 0
 
 
 # 更新汇率数据
-def update_market_currency():
+def update_market_currency(str_path):
     ''' 更新汇率数据 '''
     str_metric = 'currency'
     print("\n>>> %s| 更新%s数据..."%(str_hours(0),str_metric))
@@ -468,13 +468,13 @@ def update_market_currency():
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
     print(">>> 将数据保存到本地...")
     tmp_str_file_name = str(time_to_int(max(intm_df_data.index)))+'_market_currency.csv'
-    intm_df_data.to_csv(par_str_path_market+tmp_str_file_name, encoding='utf_8_sig')
+    intm_df_data.to_csv(str_path+tmp_str_file_name, encoding='utf_8_sig')
 
     return 0
 
 
 # 更新每日的内部交易者信息
-def update_market_insiderTrade():
+def update_market_insiderTrade(str_path):
     ''' 更新每日的内部交易者信息 '''
     
     # 读取现有的行情数据
@@ -507,7 +507,7 @@ def update_market_insiderTrade():
                 
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
     print(">>> 将数据保存到本地...")
-    intm_df_price.to_csv(par_str_path_market+str(time_to_int(max(intm_df_price['AnnounceDate'])))+'_market_'+str_metric+'.csv', encoding='utf_8_sig')
+    intm_df_price.to_csv(str_path+str(time_to_int(max(intm_df_price['AnnounceDate'])))+'_report_'+str_metric+'.csv', encoding='utf_8_sig')
         
     return 0
 
@@ -534,8 +534,51 @@ def update_reports_quarter(str_metric, df_reports_input, dt_quarter):
     return df_reports
 
 
+# 更新分析师预测
+def update_analyst_forecast(str_path):
+    ''' 更新分析师预测 '''
+    
+    intm_df_data = ds.read_file("analyst_forecast")
+    intm_list_new_days = [max(intm_df_data.last_rating_date)+dt.timedelta(days=ii) for ii in range(1, 
+                          (max(ds.get_newest_date_list()) - max(intm_df_data.last_rating_date)).days+1)]
+    
+    for u in intm_list_new_days:
+        
+        print(">>> %s| 更新%s数据..."%(str_hours(0),time_to_str(u)))
+        intm_raw_forecast = wind_func_wset("analyst_forecast", time_to_str(u), str(u.year))
+        intm_df_forecast = pd.DataFrame(intm_raw_forecast.Data,index=intm_raw_forecast.Fields).T
+        intm_df_forecast['rating_year'] = u.year
+        intm_df_forecast['counts'] = intm_df_forecast.count(axis=1)
+    
+        # 若处于密集报告发布期，则选两个预测期对照，找到预测期对齐的分析师预测
+        if u.month<=4:
+            intm_raw_forecast_lastyear = wind_func_wset("analyst_forecast", time_to_str(u), str(u.year-1))
+            intm_df_forecast_lastyear = pd.DataFrame(intm_raw_forecast_lastyear.Data,index=intm_raw_forecast_lastyear.Fields).T
+            intm_df_forecast_lastyear['rating_year'] = u.year - 1
+            intm_df_forecast_lastyear['counts'] = intm_df_forecast_lastyear.count(axis=1)
+            
+            # 按照股票代码、评级机构、评级年份降序排列（同股、同机构的评级会靠在一起，且靠后年份排前面）
+            intm_df_forecast = intm_df_forecast.append(intm_df_forecast_lastyear).sort_values(by=['wind_code', 'organization', 'rating_year'], ascending=False)
+            # 再按照股票代码、评级机构、预测指标个数降序排列重新排一次（指标个数相同的会有靠后年份排在前面，保留了前面的排序痕迹）
+            # 删除掉预测指标个数更少的记录
+            intm_df_forecast = intm_df_forecast.sort_values(by=['wind_code', 'organization', 'counts'], ascending=False)\
+                                               .drop_duplicates(subset=['wind_code', 'organization'], keep='first')
+    
+        del intm_df_forecast['close'], intm_df_forecast['counts']
+        intm_df_forecast.index = intm_df_forecast['last_rating_date'].apply(lambda x:str(time_to_int(x))) + '_'\
+                               + intm_df_forecast['wind_code'] + '_' + intm_df_forecast['organization']
+        intm_df_forecast = intm_df_forecast.sort_index()
+        
+        intm_df_data = intm_df_data.append(intm_df_forecast)
+
+    print(">>> 将数据保存到本地...")
+    intm_df_data.to_csv(str_path+str(time_to_int(max(intm_df_data['last_rating_date'])))+'_analyst_forecast.csv', encoding='utf_8_sig')
+
+    return 0
+    
+    
 # 更新定期公告/披露日期/行业分类
-def update_reports(str_metric):
+def update_reports(str_metric, str_path):
     ''' 更新定期公告/披露日期/行业分类 '''
     
     intm_df_report_date = ds.read_file(str_metric)
@@ -572,7 +615,7 @@ def update_reports(str_metric):
         tmp_str_file_name = str(time_to_int(max(intm_df_report_date.index)))+'_'+str_metric+'.csv'
     else:
         tmp_str_file_name = str(time_to_int(max(intm_df_report_date.index)))+'_report_'+str_metric+'.csv'
-    intm_df_report_date.to_csv(par_str_path_report+tmp_str_file_name, encoding='utf_8_sig')
+    intm_df_report_date.to_csv(str_path+tmp_str_file_name, encoding='utf_8_sig')
     
     return 0
 

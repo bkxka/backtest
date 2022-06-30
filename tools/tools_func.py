@@ -53,15 +53,16 @@ time_to_date = lambda x:dt.datetime(x.year, x.month, x.day)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
 df_index_time  = lambda x:x.rename(index = lambda y:pd.to_datetime(str_to_time(y) if type(y)==str else y))   # 把时间索引处理成Timestamp格式
-df_rows_dedu   = lambda x:x.loc[~x.index.duplicated(keep='first')]                           # 去除掉索引重复的行
+df_rows_dedu   = lambda x:x.loc[~x.index.duplicated(keep='first')]                              # 去除掉索引重复的行
 df_initialize  = lambda df_data, y:df_data.copy(deep=True).applymap(lambda z:y)
-df_index_swap  = lambda x:pd.DataFrame(x.index, index=x.iloc[:,0])                           # 索引与单列数据互换
+df_index_swap  = lambda x:pd.DataFrame(x.index, index=x.iloc[:,0])                              # 索引与单列数据互换
 df_mapper_clip = lambda df_map, df_data:df_data[df_map.iloc[:,0]].set_axis(list(df_map.index), axis='columns', inplace=False)
 
-time_index_df  = lambda x:x.rename(index = lambda y:str_to_time(y) if type(y)==str else y)   # 把时间索引处理成Timestamp格式
-dedu_df_rows   = lambda x:x.loc[~x.index.duplicated(keep='first')]                           # 去除掉索引重复的行
-df_diff        = lambda x:x.abs().sum(axis=1).sum()                                          # 分析两个dataframe的差异
-df_index_norm  = lambda x:(x.T / x.sum(axis=1).T).T                                          # 纵向归一化（同行的数据之和为1）
+time_index_df  = lambda x:x.rename(index = lambda y:str_to_time(y) if type(y)==str else y)      # 把时间索引处理成Timestamp格式
+dedu_df_rows   = lambda x:x.loc[~x.index.duplicated(keep='first')]                              # 去除掉索引重复的行
+df_diff        = lambda x:x.abs().sum(axis=1).sum()                                             # 分析两个dataframe的差异
+df_index_norm  = lambda x:(x.T / x.sum(axis=1).T).T                                             # 纵向归一化（同行的数据之和为1）
+df_select      = lambda x, s_rule:x[eval('x' + s_rule)]                                         # 保留dataframe中符合条件的部分
 
 
 # dataframe数值过滤
@@ -124,15 +125,10 @@ def df_cut_sum(df_data, list_sep):
     '''
     Parameters
     ----------
-    df_data : dataframe
-        待分割的dataframe，已按照index次序排列
-    list_sep : list
-        分割的节点，应为index中的元素，已按照次序排列
-
-    Returns
+    df_data : 待分割的dataframe，已按照index次序排列
+    list_sep : 分割的节点，应为index中的元素，已按照次序排列
     -------
-    df_result : dataframe
-        分割聚合后的结果
+    df_result : 分割聚合后的结果
     '''
     
     tmp_df_data = df_data.copy(deep=True)

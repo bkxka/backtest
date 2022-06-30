@@ -206,6 +206,9 @@ def wind_func_wset(str_metric, str_start_date, str_end_date):
         tmp_raw_price = w.wset("szhktransactionstatistics","startdate="+str_start_date+";enddate="+str_end_date+";cycle=day;currency=hkd")
     elif str_metric == 'insiderTrade':
         tmp_raw_price = w.wset("majorholderdealrecord","startdate="+str_start_date+";enddate="+str_end_date+";sectorid=a001010100000000;type=announcedate")
+    elif str_metric == 'analyst_forecast':
+        # 注意这里经过了特殊处理：str_start_date为发布预测当天，str_end_date为发布预测期，与wind原始函数不同
+        tmp_raw_price = w.wset("allorganizationforecasting","year="+str_end_date+";startdate="+str_start_date+";enddate="+str_start_date+";sector=a001010100000000;orgname=all")
 
     # 调用成功则返回结果，否则再次调用
     if tmp_raw_price.ErrorCode == 0:
