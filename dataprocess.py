@@ -390,13 +390,15 @@ def get_target_position_unlimited(list_days, df_stockPool, df_scores, int_holdNu
 
 
 # 将股票池按照因子分值排序进行分组
-def get_df_slices(df_scores, list_dates_signal, df_stock_pool, int_layers, int_signal=1):
+# 删掉多余的 list_dates_signal
+def get_df_slices(df_scores, df_stock_pool, int_layers, int_signal=1):
     ''' 
     将股票池按照因子分值进行分组
     默认信号延迟一天：即当天尾盘按照昨日收盘信息调仓；int_signal=0表示按照当天收盘信息调仓
     '''
     dict_result = {v:pd.DataFrame(0, index=df_stock_pool.index, columns=df_stock_pool.columns) for v in range(int_layers)}
-    for u in list_dates_signal:
+    # for u in list_dates_signal:
+    for u in df_scores.index:
         tmp_df_pool = df_stock_pool.loc[u][df_stock_pool.loc[u]>0]                      # 选取股票池中可选股票
         tmp_df_rank = df_scores.loc[u, tmp_df_pool.index].sort_values(ascending=True)   # 将当天股票池中股票按照分值排序
         len_piece   = len(tmp_df_pool)//int_layers
