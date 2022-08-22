@@ -33,6 +33,7 @@ def send_mails(path, files, pics, receiver, str_subject, str_content):
     # 发送者的登陆用户名和密码
     user = 'wangdu14008@163.com'
     password = '200514008'
+    password = 'QLKVCLWOAZNLRMFC'
     smtpserver = 'smtp.163.com' #发送者邮箱的SMTP服务器地址
     
     sender = user
