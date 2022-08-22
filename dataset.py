@@ -8,7 +8,9 @@ Created on Tue Nov 17 09:01:30 2020
 import pandas as pd
 import numpy as np
 from datetime import *
+from openpyxl import Workbook, load_workbook
 import os
+import warnings
 
 from tools.tools_func import *
 
@@ -38,10 +40,6 @@ if True:
     par_str_path_moneyflow = par_str_path_price + 'moneyflow/'
 
 
-''' 文件夹路径与文件名 '''
-path = 'C:/InvestmentResearch/chiyeguang/'
-path_moneyflow = path + 'moneyflow/moneyflow_'
-
 
 ''' 读取本地原始数据 '''
 # 根据指标读取最新的数据文件，并对时间索引做标准化处理
@@ -54,13 +52,12 @@ def read_file(str_metric):
     # 检索数据库所有文件，并提取出可能的对象（对于字段重复的，有特殊情况处理）
     list_files      = get_list_files("C:\\InvestmentResearch\\database")[0]
     list_files_cand = [v for v in list_files if str_metric in v]
-    list_files_cand = [v for v in list_files_cand if 'price_st'     in v] if str_metric=='st'     else list_files_cand
-    list_files_cand = [v for v in list_files_cand if 'price_low'    in v] if str_metric=='low'    else list_files_cand
-    list_files_cand = [v for v in list_files_cand if 'price_vwap'   in v] if str_metric=='vwap'   else list_files_cand
-    list_files_cand = [v for v in list_files_cand if 'price_close'  in v] if str_metric=='close'  else list_files_cand
-    list_files_cand = [v for v in list_files_cand if 'price_mktcap' in v] if str_metric=='mktcap' else list_files_cand
-    list_files_cand = [v for v in list_files_cand if 'price_amount' in v] if str_metric=='amount' else list_files_cand
-    list_files_cand = [v for v in list_files_cand if 'minu' not in v] if 'minu' not in str_metric else list_files_cand
+    
+    # 修正查询字段
+    if str_metric in ['st', 'low', 'vwap', 'close', 'mktcap', 'amount', 'dayReturn']:
+        list_files_cand = [v for v in list_files_cand if 'price_'+str_metric in v]
+    if 'minu' not in str_metric:
+        list_files_cand = [v for v in list_files_cand if 'minu' not in v]
     
     # 自检逻辑，如果读取到的文件名称相仿则为真，否则为假
     self_check, ii = True, 0
@@ -126,102 +123,6 @@ def read_file(str_metric):
     else:
         print(">>> 数据读取错误，请检查指标名称 %s 是否正确..."%str_metric)
         return 0
-    
-    
-        
-    # # 以下是特定指标读数
-    # if str_metric[:3]=='000' or str_metric in ['index_close', 'CFE_close', 'CFE_vwap']:
-    #     intm_list_files = os.listdir(par_str_path_index)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_index+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0)
-    #     return df_index_time(intm_df_file)
-    # elif str_metric in ['open', 'high', 'low', 'close', 'hclose', 'vwap', 'adjfactor', 'mktcap', 'dayReturn', 'st', 'dayLimit', 'shszhkHold', 'amount', 'floatAmktcap', 'beta300', 'beta905']:
-    #     intm_list_files = os.listdir(par_str_path_price)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_price_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_price+str(intm_int_last_date)+'_price_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
-    #     return df_index_time(intm_df_file)
-    # elif str_metric in ['announceDate', 'netQProfit', 'netQCashflowOper', 'netEquity', 'title']:
-    #     intm_list_files = os.listdir(par_str_path_report)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_report_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_report+str(intm_int_last_date)+'_report_'+str_metric+'.csv', index_col=0, low_memory=False, encoding='utf_8_sig')
-    #     if str_metric == 'title':
-    #         intm_df_file['notice_date'] = intm_df_file['notice_date'].apply(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #         return intm_df_file
-    #     elif str_metric == 'announceDate':
-    #         intm_df_file = intm_df_file.applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #     return df_index_time(intm_df_file)
-    # elif str_metric in ['industry_sw', 'industry_wind', 'analyst_forecast']:
-    #     intm_list_files = os.listdir(par_str_path_report)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_report+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0)
-    #     if str_metric in ['analyst_forecast']:
-    #         intm_df_file[['last_rating_date', 'eps_date']] = intm_df_file[['last_rating_date', 'eps_date']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #         return intm_df_file
-    #     else:
-    #         return df_index_time(intm_df_file)
-    # elif str_metric in ['buyAmount_exlarge', 'sellAmount_exlarge', 'buyAmount_large', 'sellAmount_large', 
-    #                     'buyAmount_middle',  'sellAmount_middle',  'buyAmount_small', 'sellAmount_small']:
-    #     intm_list_files = os.listdir(par_str_path_moneyflow)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_moneyflow_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_moneyflow+str(intm_int_last_date)+'_moneyflow_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
-    #     return df_index_time(intm_df_file)
-    # elif str_metric in ['etf_close', 'etf_netvalue', 'etf_list', 'etf_amount']:
-    #     intm_list_files = os.listdir(par_str_path_etf)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_etf+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0).fillna(0)
-    #     if str_metric == 'etf_list':
-    #         return intm_df_file
-    #     else:
-    #         return df_index_time(intm_df_file)
-    # elif str_metric in ['shszhkFlow', 'insiderTrade', 'bonus', 'currency']:
-    #     intm_list_files = os.listdir(par_str_path_market)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_market_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_market+str(intm_int_last_date)+'_market_'+str_metric+'.csv', index_col=0, low_memory=False)
-    #     if str_metric in ['shszhkFlow', 'currency']:
-    #         return df_index_time(intm_df_file)
-    #     if str_metric == 'insiderTrade':
-    #         intm_df_file[['AnnounceDate', 'StartDate', 'EndDate']] = intm_df_file[['AnnounceDate', 'StartDate', 'EndDate']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #         return intm_df_file
-    #     if str_metric == 'bonus':
-    #         list_column_dates = ['reporting_date', 'share_benchmark_date', 'dividends_announce_date', 'shareregister_date', 'exrights_exdividend_date', 'dividend_payment_date']
-    #         intm_df_file[list_column_dates] = intm_df_file[list_column_dates].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #         return intm_df_file
-    # # 以下是非特定的指标读数
-    # elif 'ticker' in str_metric:
-    #     intm_list_files = os.listdir(par_str_path_ticker)
-    #     intm_str_target_file = max([v for v in intm_list_files if str_metric in v])
-    #     intm_df_file = pd.read_csv(par_str_path_ticker+intm_str_target_file, index_col=0)
-    #     if 'cb' in str_metric:
-    #         intm_df_file[['InterestDateBegin', 'InterestDateEnd', 'DateListing', 'DateRedeemNotice']] = \
-    #         intm_df_file[['InterestDateBegin', 'InterestDateEnd', 'DateListing', 'DateRedeemNotice']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #     if 'CFE' in str_metric:
-    #         intm_df_file[['contract_issue_date', 'last_trade_date', 'last_delivery_month']] = \
-    #         intm_df_file[['contract_issue_date', 'last_trade_date', 'last_delivery_month']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #     if 'stock' in str_metric:
-    #         intm_df_file['DateIPO']    = intm_df_file['DateIPO'].apply(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #         intm_df_file['DateDelist'] = intm_df_file['DateDelist'].apply(lambda x:str_to_time(x) if x!='0' else x)
-    #         intm_df_file['DateDelist'][intm_df_file['DateDelist']=='0'] = np.nan
-    #     if 'option' in str_metric:
-    #         intm_df_file[['first_tradedate', 'last_tradedate']] = \
-    #         intm_df_file[['first_tradedate', 'last_tradedate']].applymap(lambda x:str_to_time(x[:10]) if type(x)==str else x)
-    #     return intm_df_file
-    # elif 'minu' in str_metric:
-    #     # 分钟数据的索引转换不同其他，作单独处理
-    #     intm_list_files = os.listdir(par_str_path_minute)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if str_metric in v])
-    #     intm_df_file = pd.read_csv(par_str_path_minute+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0, low_memory=False, encoding='utf_8_sig')\
-    #                      .rename(index=lambda x:dt.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
-    #     return intm_df_file
-    # # 注意可能会和分钟线数据混同
-    # elif 'cb_' in str_metric and 'minu' not in str_metric:
-    #     intm_list_files = os.listdir(par_str_path_cb)
-    #     intm_int_last_date = max([int(v.split("_")[0]) for v in intm_list_files if v[8:]=='_'+str_metric+'.csv'])
-    #     intm_df_file = pd.read_csv(par_str_path_cb+str(intm_int_last_date)+'_'+str_metric+'.csv', index_col=0).fillna(0).rename(index=lambda x:str_to_time(x))
-    #     return df_index_time(intm_df_file)
-
-    # else:
-    #     print(">>> 未找到所请求的文件 %s ..."%str_metric)
-    #     return 0
 
 
 # 导入指数的行情数据
@@ -282,13 +183,17 @@ def load_QResults(str_metric):
 
 
 # 导入每只股票的行业数据
-def load_industry(str_metric, str_split):
+def load_industry(str_metric, str_split='-'):
     ''' 导入每只股票的行业数据 '''
-    tmp_1 = read_file(str_metric).applymap(lambda x:x.split(str_split[0])[0] if x[0]!=str_split else x)
-    tmp_2 = read_file(str_metric).applymap(lambda x:str_split.join(x.split(str_split)[:2]) if x[0]!=str_split else x)
-    tmp_3 = read_file(str_metric).applymap(lambda x:str_split.join(x.split(str_split)[:3]) if x[0]!=str_split else x)
-    tmp_4 = read_file(str_metric).applymap(lambda x:str_split.join(x.split(str_split)) if x[0]!=str_split else x)
-    return [tmp_1, tmp_2, tmp_3, tmp_4] 
+    tmp_file = read_file(str_metric)
+    tmp_file = tmp_file.applymap(lambda x:x.split(str_split) if type(x)==str else np.nan)
+    
+    tmp1 = tmp_file.applymap(lambda x:x[0] if (type(x)==list and len(x)>=1) else np.nan)
+    tmp2 = tmp_file.applymap(lambda x:str_split.join(x[:2]) if (type(x)==list and len(x)>=2) else np.nan)
+    tmp3 = tmp_file.applymap(lambda x:str_split.join(x[:3]) if (type(x)==list and len(x)>=3) else np.nan)
+    tmp4 = tmp_file.applymap(lambda x:str_split.join(x[:4]) if (type(x)==list and len(x)>=4) else np.nan)
+    
+    return [tmp1, tmp2, tmp3, tmp4] 
 
 
 # # 将少量截面数据转变成全周期时序数据
@@ -393,7 +298,74 @@ def read_minute_data(str_path, list_ticker, list_date, list_timesep):
     return data_df_cb_close_minu, data_df_cb_avgprice_minu, data_df_cb_amount_minu
 
 
+# 读取财务报表的某一指标,转换成ttm数据
+def read_statement_ttm(metric, sheet, file_path, date_type='reportDate'):
+    ''' 
+    读取财务报表的某一指标,转换成ttm数据
+    method(数据处理方式): stock存量，flow流量
+    当出现多个指标符合输入参数时，选择最短的一个
+    '''
+    
+    ticker = file_path.split('_')[1][:9]
+    wb = load_workbook(file_path, data_only=True)
+    df = pd.DataFrame(wb[sheet].values)
+    l_targ = [v for v in list(df.iloc[:,0]) if metric in v]
+    m_date =  [v for v in list(df.iloc[:,0]) if '公告日期' in v][0]
+    
+    if ticker!=df.iloc[0,1]:
+        print("财报数据错误...")
+        return None, df
 
+    if len(l_targ)<1:
+        print("指标读取错误...", metric, ticker)
+        return None, df
+    else:
+        m_targ = l_targ[0]
+        for u in l_targ:
+            m_targ = u if len(u)<len(m_targ) else m_targ
+        
+    # slice = pd.concat([df.iloc[4:6,:].T, df[df[0]==m_targ].T, df[df[0]==m_date].T], axis=1).set_index(4)
+    slice = pd.concat([df.iloc[4:6,:], df[df[0]==m_targ], df[df[0]==m_date]], axis=0)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        slice = slice.T.set_index(4)
+    slice = slice.iloc[1:,:].rename(columns=lambda x:slice[x].iloc[0]).fillna(0)
+    
+    if sheet in ['利润表', '现金流量表']:
+        
+        slice['m_ttm'] = slice[slice.iloc[:,0]=='年报'][m_targ]
+        # ttm流量计算方法：当季总量+去年总量-去年同期总量
+        tmp_m_lastyear = slice['m_ttm'].fillna(method='backfill').shift(-1)
+        tmp_m_lastquar = pd.Series(slice.index, index=slice.index)\
+                           .apply(lambda x:x.replace(year=x.year-1))\
+                           .apply(lambda x:slice.loc[x, m_targ] if x in slice.index else np.nan)
+        tmp_m_ttm      = slice[m_targ] + tmp_m_lastyear - tmp_m_lastquar
+        
+        # 年报采用年报数据，非年报采用上述计算数据
+        slice['m_ttm'] = slice['m_ttm'].fillna(0) + ((slice['m_ttm'] * 0).fillna(1) * tmp_m_ttm).fillna(0)
+        slice['m_ttm'][slice['m_ttm']==0] = np.nan
+        slice['m_ttm'] = slice['m_ttm'].fillna(method='backfill')
+    
+    elif sheet=='资产负债表':
+        
+        slice['m_ttm'] = slice[m_targ]
+        
+        
+    
+    if date_type == 'annouceDate':
+        return slice.set_index(m_date), df
+    elif date_type == 'reportDate':
+        return slice, df
+    else:
+        return None, df
+    
+    
+    
+    
+    
+    
+    
+    
 if __name__=='__main__':
     
     pass
