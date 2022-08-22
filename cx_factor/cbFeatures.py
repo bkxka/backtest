@@ -116,7 +116,8 @@ def get_df_arbitrage(dict_trade, dict_rules, df_trade_cycle, df_iv, df_hv, df_de
                 tmp_bool_sell = tmp_bool_sell or eval(u)
             tmp_se_arb_new.loc[q] = 0 if tmp_bool_sell else 1
                 
-        tmp_df_arb = tmp_df_arb.append(tmp_se_arb_new.to_frame().T)
+        # tmp_df_arb = tmp_df_arb.append(tmp_se_arb_new.to_frame().T)
+        tmp_df_arb = pd.concat([tmp_df_arb, tmp_se_arb_new.to_frame().T], axis=0)
         
     return tmp_df_arb
         

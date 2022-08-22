@@ -26,7 +26,8 @@ pd.set_option('mode.chained_assignment',None)
 # test
 
 ''' 短程序/处理函数 '''
-filter_weight = lambda x, y:x[x>=y].append(pd.Series(x[x<y].sum(), index=['其他'])) if type(x) == pd.core.series.Series else 0
+# filter_weight = lambda x, y:x[x>=y].append(pd.Series(x[x<y].sum(), index=['其他'])) if type(x) == pd.core.series.Series else 0
+filter_weight = lambda x, y:pd.concat([x[x>=y], pd.Series(x[x<y].sum(), index=['其他'])], axis=0) if type(x) == pd.core.series.Series else 0
 
 
 # 操作选股池/并集or交集
@@ -151,7 +152,8 @@ def get_index_industry_weight(df_index_stocks, df_index_weight, df_industry):
         tmp_df_weight    = tmp_df_weight.loc[tmp_df_weight.index.isna()==False]
         tmp_df_industry  = df_industry.loc[u].to_frame().rename(columns={u:'industry'})
         tmp_df_aggregate = pd.concat([tmp_df_weight, tmp_df_industry], axis=1).fillna(0).groupby('industry').sum()
-        data_df_index_industry = data_df_index_industry.append(tmp_df_aggregate.T)
+        # data_df_index_industry = data_df_index_industry.append(tmp_df_aggregate.T)
+        data_df_index_industry = pd.concat([data_df_index_industry, tmp_df_aggregate.T], axis=0)
 
     # 权重数据重新整理并归一化
     # data_df_index_industry = data_df_index_industry[[v for v in data_df_index_industry.columns if v[0] not in ['0', '-']]]
@@ -181,9 +183,11 @@ def cross_to_sequence(list_tradingDays, data_df_industry_raw):
     for u in tmp_df_date.index:
         dt_head, dt_tail = tmp_df_date.loc[u,0], tmp_df_date.loc[u,1]
         tmp_list_date = [v for v in list_tradingDays if v>dt_head and v<=dt_tail]
-        tmp_df_data   = pd.DataFrame().append([data_df_industry_raw.loc[dt_head].to_frame().T]*len(tmp_list_date))
+        # tmp_df_data   = pd.DataFrame().append([data_df_industry_raw.loc[dt_head].to_frame().T]*len(tmp_list_date))
+        tmp_df_data   = pd.concat([data_df_industry_raw.loc[dt_head].to_frame().T]*len(tmp_list_date), axis=0)
         tmp_df_data.index = tmp_list_date
-        intm_df_industry = intm_df_industry.append(tmp_df_data)
+        # intm_df_industry = intm_df_industry.append(tmp_df_data)
+        intm_df_industry = pd.concat([intm_df_industry, tmp_df_data], axis=0)
         
     return intm_df_industry
 
@@ -200,7 +204,8 @@ def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_c
     data_df_index_constitution = pd.DataFrame()
     for u in data_df_index_weight.index:
         tmp_df_cons = pd.concat([data_df_index_stocks.loc[u].to_frame().rename(columns={u:0}), data_df_index_weight.loc[u]], axis=1).dropna().set_index(0)
-        data_df_index_constitution = data_df_index_constitution.append(tmp_df_cons.T).fillna(0)
+        # data_df_index_constitution = data_df_index_constitution.append(tmp_df_cons.T).fillna(0)
+        data_df_index_constitution = pd.concat([data_df_index_constitution, tmp_df_cons.T], axis=0).fillna(0)
         
     tmp_df_index_constitution = cross_to_sequence(list(data_df_close_cb.index), data_df_index_constitution)
 
@@ -322,7 +327,8 @@ def func_target_position_day_branch_1(u, df_target_industry, df_stockPool, df_in
                     tmp_df_stocks_compare['weight'] = tmp_df_stocks_compare['weight'] * tmp_fmc
                         
                 tmp_df_stocks_compare['industry'] = q
-                tmp_df_stocks_selected = tmp_df_stocks_selected.append(tmp_df_stocks_compare)
+                # tmp_df_stocks_selected = tmp_df_stocks_selected.append(tmp_df_stocks_compare)
+                tmp_df_stocks_selected = pd.concat([tmp_df_stocks_selected, tmp_df_stocks_compare], axis=0)
     
     stgy_df_target_position.loc[list(tmp_df_stocks_selected.index)] = tmp_df_stocks_selected['weight']
     

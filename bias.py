@@ -80,7 +80,8 @@ def get_orders_cx(str_path_order, str_cx_ah):
     data_df_orders_cx_ah = pd.DataFrame()
     for u in list_orders:
         if str_cx_ah in u:
-            data_df_orders_cx_ah = data_df_orders_cx_ah.append(pd.read_csv(str_path_order+u, encoding='utf_8_sig'))
+            # data_df_orders_cx_ah = data_df_orders_cx_ah.append(pd.read_csv(str_path_order+u, encoding='utf_8_sig'))
+            data_df_orders_cx_ah = pd.concat([data_df_orders_cx_ah, pd.read_csv(str_path_order+u, encoding='utf_8_sig')], axis=0)
     data_df_orders_cx_ah['date'] = data_df_orders_cx_ah['orderTime'].apply(lambda x:str_to_time(x))
     # data_df_orders_cx_ah['date'] = data_df_orders_cx_ah['orderTime'].apply(lambda x:str_to_time(x.split(' ')[0]))
     data_df_orders_cx_ah.rename(columns={'Unnamed: 0':'ticker'}, inplace=True)
@@ -102,7 +103,8 @@ def get_delivery_cx(data_df_delivery, data_df_orders_cx_ah, list_ignore=[]):
         tmp_df = data_df_delivery[(data_df_delivery['成交日期']==tmp_dict['date']) \
                                 & (data_df_delivery['证券代码']==tmp_dict['ticker'])]
         if tmp_df['成交数量'].sum()==tmp_dict['netbuy']:
-            data_df_delivery_cx_ah = data_df_delivery_cx_ah.append(tmp_df)
+            # data_df_delivery_cx_ah = data_df_delivery_cx_ah.append(tmp_df)
+            data_df_delivery_cx_ah = pd.concat([data_df_delivery_cx_ah, tmp_df], axis=0)
         else:
             if tmp_dict['date'] in list_ignore:
                 pass

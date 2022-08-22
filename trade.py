@@ -103,7 +103,8 @@ def trade_model(stgy_df_target_position, df_close, df_dayReturn, df_dayLimit, df
             tmp_df_stock_state_append = tmp_df_stock_state_target.loc[tmp_list_trade_allow]
             tmp_df_stock_state_append['position'] = tmp_df_stock_state_append['position'] * (1-tmp_df_stock_state_keep['position'].sum()) / tmp_df_stock_state_append['position'].sum()
             # 根据实际情况调整后的仓位
-            intm_df_position_new = tmp_df_stock_state_keep.append(tmp_df_stock_state_append).loc[:,'position'].to_frame()
+            # intm_df_position_new = tmp_df_stock_state_keep.append(tmp_df_stock_state_append).loc[:,'position'].to_frame()
+            intm_df_position_new = pd.concat([tmp_df_stock_state_keep, tmp_df_stock_state_append], axis=0).loc[:,'position'].to_frame()
         # 无成交限制条件
         else:
             pass

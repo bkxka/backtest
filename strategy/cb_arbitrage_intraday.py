@@ -131,7 +131,8 @@ def read_minute_data(str_path, list_ticker, list_date, list_timesep):
         print(">>> processing", u, str_hours(2))
         tmp_df_minute = pd.read_csv(str_path+str(time_to_int(u))+'.csv', encoding='utf_8_sig').iloc[:,1:]
         tmp_df_minute = tmp_df_minute[tmp_df_minute['ticker'].isin(list_ticker)]
-        data_df_stock_minute = data_df_stock_minute.append(tmp_df_minute)
+        # data_df_stock_minute = data_df_stock_minute.append(tmp_df_minute)
+        data_df_stock_minute = pd.concat([data_df_stock_minute, tmp_df_minute], axis=0)
 
     data_df_stock_minute['timestamp'] = data_df_stock_minute['timestamp'].apply(lambda x:dt.datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
     data_df_stock_minute['timesep']   = data_df_stock_minute['timestamp'].apply(lambda x:x.hour*100+x.minute)

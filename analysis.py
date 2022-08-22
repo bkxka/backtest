@@ -166,7 +166,8 @@ def get_slices_return(set_int_slices, stgy_df_scores, data_df_stocks_pool, data_
 #        intm_list_amount.append(tmp_c)
         xx = tmp_e['marketNeutralReturn'].to_frame().rename(columns={'marketNeutralReturn':ii})
         result_df_netvalue = pd.concat([result_df_netvalue, xx], axis=1)
-        result_df_pnl = result_df_pnl.append(tmp_f[0].rename(index={tmp_f[0].index[0]:ii}))
+        # result_df_pnl = result_df_pnl.append(tmp_f[0].rename(index={tmp_f[0].index[0]:ii}))
+        result_df_pnl = pd.concat([result_df_pnl, tmp_f[0].rename(index={tmp_f[0].index[0]:ii})], axis=0)
         
     return result_df_netvalue, result_df_pnl
     
