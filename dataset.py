@@ -12,6 +12,8 @@ from openpyxl import Workbook, load_workbook
 import os
 import warnings
 
+# import sys
+# sys.path.append("C:\\InvestmentResearch")
 from tools.tools_func import *
 
 ''' 短程序/处理函数 '''
@@ -347,17 +349,16 @@ def read_statement_ttm(metric, sheet, file_path, date_type='reportDate'):
         slice['m_ttm'] = slice['m_ttm'].fillna(method='backfill')
     
     elif sheet=='资产负债表':
-        
         slice['m_ttm'] = slice[m_targ]
-        
-        
     
-    if date_type == 'annouceDate':
-        return slice.set_index(m_date), df
-    elif date_type == 'reportDate':
-        return slice, df
-    else:
-        return None, df
+    # 不要使用annouceDate，因为wind导出的报表中的披露日期信息有误
+    return slice, df
+    # if date_type == 'annouceDate':
+    #     return slice.set_index(m_date), df
+    # elif date_type == 'reportDate':
+    #     return slice, df
+    # else:
+    #     return None, None
     
     
     

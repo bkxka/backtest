@@ -15,6 +15,10 @@ import time
 # from fake_useragent import UserAgent
 # ua = UserAgent(verify_ssl=False)
 
+import sys
+sys.path.append("C:\\InvestmentResearch")
+
+import backtest
 from tools.tools_config import *
 __warning__ = '如果导入超过1天的历史数据，则该交易日前的所有分钟的开盘价都为0，所以尽量做到每天更新' # warning！！！
 
@@ -161,7 +165,7 @@ def get_list_announce(str_ticker, page_index, page_size=100):
 
 if False:
     for q in list_agent_add:
-        headers = {'User-Agent': q}
+        headers = {'User-Agent': random.choice(USER_AGENTS)}
         para_cb      = 'jQuery112307187800974662852_1613986338803'  # checkbox，HTML中的复选框
         para_fields1 = 'f1%2Cf2%2Cf3%2Cf4'                          # 查询字段1
         para_fields2 = 'f51%2Cf52%2Cf53%2Cf54%2Cf63'                # 查询字段2
