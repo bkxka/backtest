@@ -32,6 +32,7 @@ if True:
     par_str_today = str(time_to_int(par_dt_today))
     # par_str_path = '/'.join(sys.argv[0].split('\\')[:-1])               # 本脚本的文件夹地址
     par_str_path = "C:/InvestmentResearch/database"               # 本脚本的文件夹地址
+    par_str_path_log       = par_str_path + '/log/'
     par_str_path_cb        = par_str_path + '/cb/'
     par_str_path_index     = par_str_path + '/index/'
     par_str_path_ticker    = par_str_path + '/ticker/'
@@ -49,6 +50,16 @@ if True:
     par_list_nan = [np.nan, np.inf, -np.inf]
     par_int_vol_period = 30
 
+
+# 保存更新日志到文件中
+def log_msg(txt, print_option=True):
+    
+    print(str_hours(0)+' > '+txt) if print_option else None
+    log_flag = par_str_path_log+str(time_to_int(datetime.datetime.now()))+".log"
+    f = open(log_flag, "a", encoding='utf_8_sig')
+    f.write(str_hours(0)+' > '+txt+'\n')
+    f.close()
+    return 0
 
 
 # 重构 dataframe 数据
@@ -88,18 +99,20 @@ def get_price_ticker_list(str_metric, str_date, list_tickers, int_piece=100):
     for u in list_tickers_piece:
         tmp_raw_price = wind_func_wss(u, str_metric, str_date)
         tmp_df_price = pd.DataFrame(tmp_raw_price.Data[0],columns=[str_date],index=tmp_raw_price.Codes)
-        intm_df_price = intm_df_price.append(tmp_df_price)
+        # intm_df_price = intm_df_price.append(tmp_df_price)
+        intm_df_price = pd.concat([intm_df_price, tmp_df_price], axis=0)
         
     # 判断读数是否正常, 若有异常则再次读数：
     while (len(intm_df_price.index) > len(list_tickers)):
         intm_df_error = intm_df_price.loc[~intm_df_price.index.isin(list_tickers),:]
-        print(">>> 读取结果异常，异常原因: %s"%str(intm_df_error.iloc[0,0]))
+        log_msg('日行情读取异常，异常原因：%s'%str(intm_df_error.iloc[0,0]))
         intm_df_price = intm_df_price.loc[list_tickers,:]
         if intm_df_price.isnull().any():
             intm_df_price_normal = intm_df_price.dropna()
             intm_df_price_abnormal = intm_df_price.loc[~intm_df_price.index.isin(intm_df_price_normal.index)]
             intm_df_price_abnormal = get_price_ticker_list(str_metric, str_date, list(intm_df_price_abnormal.index), int_piece)
-            intm_df_price = intm_df_price_normal.append(intm_df_price_abnormal)
+            # intm_df_price = intm_df_price_normal.append(intm_df_price_abnormal)
+            intm_df_price = pd.concat([intm_df_price_normal, intm_df_price_abnormal], axis=0)
         else:
             pass
         
@@ -111,33 +124,37 @@ def update_price(str_metric, str_path):
     ''' 更新全市场证券的行情信息 '''
     
     # 读取现有的股票数据
-    print("\n>>> %s| 开始处理 %s 行情数据..."%(str_hours(0), str_metric))
+    log_msg('开始处理 %s 行情数据...'%str_metric)
     intm_df_price = ds.read_file(str_metric)
     if 'cb' in str_metric:
         intm_list_tickers = list(ds.read_file('ticker_cb').index)
-    elif (str_metric in ['hclose', 'CFE_close']) or ('etf' in str_metric):
+    # 固定证券代码列表，无需更新
+    elif (str_metric in ['hclose', 'CFE_close', 'fund_dayReturn']) or ('etf' in str_metric):
         intm_list_tickers = list(intm_df_price.columns)
     else:
         intm_list_tickers = list(ds.load_tickers().index)
     
     # 根据新增日期更新价格数据【现存数据已经是当下最全的数据，所有新增证券都不需要更早的历史数据】
     intm_list_date_update = get_list_date_update(intm_df_price)
+    intm_list_date_update = intm_list_date_update[:-3] if str_metric=='fund_dayReturn' else intm_list_date_update
     if len(intm_list_date_update) == 0:
-        print(">>> %s| %s 数据已是最新的..."%(str_hours(0), str_metric))
+        log_msg('%s 数据已是最新的'%str_metric)
     else:
         data_df_price_update = pd.DataFrame()
         for u in intm_list_date_update:
             str_time = str(time_to_int(u))
-            print(">>> %s| 正在提取 %s 的 %s 数据..."%(str_hours(0), str_time, str_metric))
+            log_msg('正在提取 %s 的 %s 数据'%(str_time, str_metric))
             tmp_df_price_update = get_price_ticker_list(str_metric, str_time, intm_list_tickers, 50).T
             tmp_df_price_update.index = [u]
-            data_df_price_update = data_df_price_update.append(tmp_df_price_update)
+            # data_df_price_update = data_df_price_update.append(tmp_df_price_update)
+            data_df_price_update = pd.concat([data_df_price_update, tmp_df_price_update], axis=0)
         # 读取成功的数据拼贴到原有数据上
-        intm_df_price = df_rows_dedu(intm_df_price.append(data_df_price_update))
+        # intm_df_price = df_rows_dedu(intm_df_price.append(data_df_price_update))
+        intm_df_price = df_rows_dedu(pd.concat([intm_df_price,data_df_price_update], axis=0))
 
     # 数据清洗整理
     intm_df_price = intm_df_price.fillna(0)
-    if ('cb' in str_metric) or ('etf' in str_metric) or (str_metric in ['hclose', 'CFE_close']):
+    if ('cb' in str_metric) or ('etf' in str_metric) or (str_metric in ['hclose', 'CFE_close', 'fund_dayReturn']):
         pass                                                # 港股/ETF/cb：不需要做特殊处理
     else:
         # 剔除不符合要求的列名，并将nan替换为0; st数据较为特殊，nan保存为-99(st数据不在本函数内处理)
@@ -146,19 +163,19 @@ def update_price(str_metric, str_path):
         if str_metric=='shszhkHold':
             for ii in range(len(intm_df_price)-250, len(intm_df_price)):
                 if intm_df_price.iloc[ii].sum()<=0:
-                    print(">>> 填补 %s 缺失的持仓数据..."%str(time_to_int(intm_df_price.index[ii])))
+                    log_msg('填补 %s 缺失的持仓数据...'%str(time_to_int(intm_df_price.index[ii])))
                     intm_df_price.iloc[ii] = intm_df_price.iloc[ii-1]
                 
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
-    print(">>> 将数据保存到本地...")
     if ('buyAmount' in str_metric or 'sellAmount' in str_metric):
         tmp_str_fileName = str(time_to_int(max(intm_df_price.index)))+'_moneyflow_'+str_metric+'.csv'
-    elif ('cb_' in str_metric) or ('etf_' in str_metric) or (str_metric == 'CFE_close'):
+    elif ('cb_' in str_metric) or ('etf_' in str_metric) or (str_metric == 'CFE_close') or (str_metric == 'fund_dayReturn'):
         tmp_str_fileName = str(time_to_int(max(intm_df_price.index)))+'_'+str_metric+'.csv'
     else:
         tmp_str_fileName = str(time_to_int(max(intm_df_price.index)))+'_price_'+str_metric+'.csv'
 
     intm_df_price.to_csv(str_path+tmp_str_fileName, encoding='utf_8_sig')
+    log_msg('成功保存 %s 行情数据...'%str_metric)
         
     return 0
 
@@ -167,6 +184,7 @@ def update_price(str_metric, str_path):
 def update_index_close(str_today):
     ''' 更新指数点位数据 '''
     # 读取文件列表
+    log_msg("开始更新指数收盘价格数据...")
     intm_df_index_close = ds.read_file('index_close')
                                     
     # 读取现有的指数收盘价数据和日期信息
@@ -194,7 +212,7 @@ def update_index_close(str_today):
         data_df_index_close = df_rows_dedu(pd.concat([intm_df_index_close, data_df_index_close_new], axis=0))
         data_df_index_close.to_csv(par_str_path_index+str(time_to_int(max(data_df_index_close.index)))+'_index_close.csv', encoding='utf_8_sig')
             
-        log_msg("更新指数收盘价格成功...")
+        log_msg("成功更新指数收盘价格数据...")
         return 0
 
 
@@ -203,7 +221,7 @@ def update_market_shszhkFlow(str_path):
     ''' 更新每日的陆港通双向资金流入信息 '''
     # 读取现有的行情数据
     str_metric = 'shszhkFlow'
-    print("\n>>> %s| 开始处理 %s 数据..."%(str_hours(0), str_metric))
+    log_msg("开始处理 %s 数据..."%str_metric)
     intm_df_price = ds.read_file(str_metric)
     intm_list_tickers = list(intm_df_price.columns)
     
@@ -211,7 +229,7 @@ def update_market_shszhkFlow(str_path):
     intm_list_date_update = get_list_date_update(intm_df_price)
     
     if len(intm_list_date_update) == 0:
-        print(">>> %s| %s 数据已是最新的..."%(str_hours(0), str_metric))
+        log_msg("%s 数据已是最新的..."%str_metric)
     else:
         str_start_date = time_to_str(min(intm_list_date_update))
         str_end_date   = time_to_str(max(intm_list_date_update))
@@ -234,7 +252,7 @@ def update_market_shszhkFlow(str_path):
     intm_df_price = intm_df_price.fillna(0)
                 
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
-    log_msg("将数据保存到本地...")
+    log_msg("成功保存 %s 数据..."%str_metric)
     intm_df_price.to_csv(str_path+str(time_to_int(max(intm_df_price.index)))+'_market_'+str_metric+'.csv', encoding='utf_8_sig')
         
     return 0
@@ -246,7 +264,7 @@ def update_delta(str_period, str_path):
 
     # 读取本地的历史数据
     str_metric = 'cb_delta' + str_period
-    print("\n>>> %s| 开始处理 %s 行情数据..."%(str_hours(0), str_metric))
+    log_msg("开始处理 %s 行情数据..."%str_metric)
     intm_df_delta = ds.read_file(str_metric)
     np.seterr(invalid='ignore')
 
@@ -288,12 +306,12 @@ def update_delta(str_period, str_path):
     
     # 计算更新日期的delta数据
     if len(intm_list_date_update) == 0:
-        print(">>> %s| %s 数据已是最新的..."%(str_hours(0), str_metric))
+        log_msg(" %s 数据已是最新的..."%str_metric)
     else:
         data_df_price_update = pd.DataFrame(0, index=intm_list_date_update, columns=intm_df_cb_ticker.index)
         for u in intm_list_date_update:
             str_time = str(time_to_int(u))
-            print(">>> %s| 正在提取 %s 的 %s 数据..."%(str_hours(0), str_time, str_metric))
+            log_msg("正在提取 %s 的 %s 数据..."%(str_time, str_metric))
             for q in data_df_price_update.columns:
                 if intm_df_close_stock.loc[u, q] * intm_df_strike_price.loc[u, q] * intm_df_maturity.loc[u, q] * intm_df_riskfree.loc[u, q] * intm_df_vola_stock.loc[u, q]<=0:
                        data_df_price_update.loc[u, q] = 0
@@ -305,9 +323,9 @@ def update_delta(str_period, str_path):
         # intm_df_delta = intm_df_delta.append(data_df_price_update).sort_index().fillna(0)
         intm_df_delta = pd.concat([intm_df_delta, data_df_price_update], axis=0).sort_index().fillna(0)
 
-    log_msg("将数据保存到本地...")
     tmp_str_fileName = str(time_to_int(max(intm_df_delta.index)))+'_'+str_metric+'.csv'
     intm_df_delta.to_csv(str_path+tmp_str_fileName, encoding='utf_8_sig')
+    log_msg("成功保存 %s 行情数据..."%str_metric)
 
     return 0
 
@@ -318,7 +336,7 @@ def update_garch_vol(str_path):
     
     str_metric = 'cb_garchVol'
     np.seterr(invalid='ignore')
-    print("\n>>> %s| 开始处理 %s 行情数据..."%(str_hours(0), str_metric))
+    log_msg("开始处理 %s 行情数据..."%str_metric)
     
     # 读取基础数据
     data_df_tickers_cb  = ds.read_file("ticker_cb")
@@ -343,13 +361,13 @@ def update_garch_vol(str_path):
 
     # 计算更新日期的delta数据
     if len(intm_list_date_update) == 0:
-        print(">>> %s| %s 数据已是最新的..."%(str_hours(0), str_metric))
+        log_msg(" %s 数据已是最新的..."%str_metric)
     else:
         intm_df_garchVol = data_df_maturity.copy(deep=True).applymap(lambda x:0)
         # 更新波动率数据
         for u in intm_df_garchVol.index:
             str_time = str(time_to_int(u))
-            print(">>> %s| 正在提取 %s 的 %s 数据..."%(str_hours(0), str_time, 'garchVol'))
+            log_msg("正在提取 %s 的 %s 数据..."%(str_time, 'garchVol'))
             tmp_df_return    = data_df_dailyReturn.loc[data_df_dailyReturn.index<u]
             tmp_df_tradeFlag = data_df_tradeFlag.loc[:u]
             
@@ -367,9 +385,9 @@ def update_garch_vol(str_path):
         # data_df_garchVol = data_df_garchVol.append(intm_df_garchVol)
         data_df_garchVol = pd.concat([data_df_garchVol, intm_df_garchVol], axis=0)
     
-    log_msg("将数据保存到本地...")
     tmp_str_fileName = str(time_to_int(max(data_df_garchVol.index)))+'_'+str_metric+'.csv'
     data_df_garchVol.to_csv(str_path+tmp_str_fileName, encoding='utf_8_sig')
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     
     return 0
 
@@ -381,7 +399,7 @@ def update_beta(str_metric, period, str_path):
     # str_metric = 'beta905'
     # period = 0
     data_df_beta = ds.read_file(str_metric)
-    print("\n>>> %s| 开始处理 %s 行情数据..."%(str_hours(0), str_metric))
+    log_msg("开始处理 %s 行情数据..."%str_metric)
     
     # 读取基础数据
     data_df_tickers        = ds.load_tickers()
@@ -397,13 +415,13 @@ def update_beta(str_metric, period, str_path):
     
     # 计算更新日期的beta数据
     if len(intm_list_date_update) == 0:
-        print(">>> %s| %s 数据已是最新的..."%(str_hours(0), str_metric))
+        log_msg(" %s 数据已是最新的..."%str_metric)
     else:
         # 更新beta数据
         intm_df_beta = pd.DataFrame(index=intm_list_date_update, columns=data_df_tickers.index)
         for u in intm_list_date_update:
             str_time = str(time_to_int(u))
-            print(">>> %s| 正在提取 %s 的 %s 数据..."%(str_hours(0), str_time, str_metric))
+            log_msg("正在提取 %s 的 %s 数据..."%(str_time, str_metric))
             for q in intm_df_beta.columns:
                 tmp_df_input = pd.concat([data_df_dailyReturn_index, data_df_dailyReturn[q], data_df_tradeFlag[q]], axis=1)
                 tmp_df_input = tmp_df_input[(tmp_df_input.iloc[:,2]>0) & (tmp_df_input.index<=u)].dropna()
@@ -415,9 +433,9 @@ def update_beta(str_metric, period, str_path):
         # data_df_beta = data_df_beta.append(intm_df_beta).fillna(0)
         data_df_beta = pd.concat([data_df_beta, intm_df_beta], axis=0).fillna(0)
 
-    log_msg("将数据保存到本地...")
     tmp_str_fileName = str(time_to_int(max(data_df_beta.index)))+'_price_'+str_metric+'.csv'
     data_df_beta.to_csv(str_path+tmp_str_fileName, encoding='utf_8_sig')
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -440,12 +458,11 @@ def update_market_bonus(str_path):
         # tmp_df_data = tmp_df_data.append(tmp_df_data_update)
         tmp_df_data = pd.concat([tmp_df_data, tmp_df_data_update], axis=0)
         
-    log_msg("将数据保存到本地...")
     tmp_df_data = tmp_df_data.sort_values(by='reporting_date')
     tmp_df_data.index = range(len(tmp_df_data))
     tmp_str_file_name = str(time_to_int(max(tmp_df_data['reporting_date'])))+'_report_bonus.csv'
     tmp_df_data.to_csv(str_path+tmp_str_file_name, encoding='utf_8_sig')
-
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -453,7 +470,7 @@ def update_market_bonus(str_path):
 def update_market_currency(str_path):
     ''' 更新汇率数据 '''
     str_metric = 'currency'
-    print("\n>>> %s| 更新%s数据..."%(str_hours(0),str_metric))
+    log_msg("更新%s数据..."%str_metric)
     
     intm_df_data = ds.read_file(str_metric)
     tmp_newest_dates = max(ds.get_newest_date_list())
@@ -470,10 +487,9 @@ def update_market_currency(str_path):
             intm_df_data = pd.concat([intm_df_data, tmp_df_currency.T], axis=0)
     
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
-    log_msg("将数据保存到本地...")
     tmp_str_file_name = str(time_to_int(max(intm_df_data.index)))+'_market_currency.csv'
     intm_df_data.to_csv(str_path+tmp_str_file_name, encoding='utf_8_sig')
-
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -483,7 +499,7 @@ def update_market_insiderTrade(str_path):
     
     # 读取现有的行情数据
     str_metric = 'insiderTrade'
-    print("\n>>> %s| 更新%s数据..."%(str_hours(0),str_metric))
+    log_msg("开始更新 %s 数据..."%str_metric)
     intm_df_price = ds.read_file(str_metric)
     
     # 根据新增加的日期更新价格数据
@@ -491,7 +507,7 @@ def update_market_insiderTrade(str_path):
     tmp_date_end = max(ds.get_newest_date_list())
 
     if tmp_date_end < tmp_date_begin:
-        print(">>> %s| %s 数据已是最新的..."%(str_hours(0), str_metric))
+        log_msg("%s 数据已是最新的..."%str_metric)
     else:
         str_start_date = time_to_str(tmp_date_begin)
         str_end_date   = time_to_str(tmp_date_end)
@@ -511,9 +527,8 @@ def update_market_insiderTrade(str_path):
         intm_df_price.index = range(len(intm_df_price))
                 
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
-    log_msg("将数据保存到本地...")
     intm_df_price.to_csv(str_path+str(time_to_int(max(intm_df_price['AnnounceDate'])))+'_report_'+str_metric+'.csv', encoding='utf_8_sig')
-        
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -544,13 +559,14 @@ def update_reports_quarter(str_metric, df_reports_input, dt_quarter):
 def update_analyst_forecast(str_path):
     ''' 更新分析师预测 '''
     
+    log_msg("开始处理 %s 数据..."%"forecast")
     intm_df_data = ds.read_file("analyst_forecast")
     intm_list_new_days = [max(intm_df_data.last_rating_date)+dt.timedelta(days=ii) for ii in range(1, 
                           (max(ds.get_newest_date_list()) - max(intm_df_data.last_rating_date)).days+1)]
     
     for u in intm_list_new_days:
         
-        print(">>> %s| 更新%s数据..."%(str_hours(0),time_to_str(u)))
+        log_msg("更新 %s 数据..."%time_to_str(u))
         intm_raw_forecast = wind_func_wset("analyst_forecast", time_to_str(u), str(u.year))
         intm_df_forecast = pd.DataFrame(intm_raw_forecast.Data,index=intm_raw_forecast.Fields).T
         intm_df_forecast['rating_year'] = u.year
@@ -579,9 +595,8 @@ def update_analyst_forecast(str_path):
         # intm_df_data = intm_df_data.append(intm_df_forecast)
         intm_df_data = pd.concat([intm_df_data, intm_df_forecast], axis=0)
 
-    log_msg("将数据保存到本地...")
     intm_df_data.to_csv(str_path+str(time_to_int(max(intm_df_data['last_rating_date'])))+'_analyst_forecast.csv', encoding='utf_8_sig')
-
+    log_msg("成功保存 %s 数据..."%"forecast")
     return 0
     
     
@@ -589,41 +604,45 @@ def update_analyst_forecast(str_path):
 def update_reports(str_metric, str_path):
     ''' 更新定期公告/披露日期/行业分类 '''
     
+    log_msg("开始更新 %s 行情数据..."%str_metric)
     intm_df_report_date = ds.read_file(str_metric)
-    if str_metric == 'industry_sw':
-        intm_df_report_date[intm_df_report_date=='--']  = np.nan
-    if str_metric == 'industry_wind':
-        intm_df_report_date[intm_df_report_date=='---'] = np.nan
     
     # 加上新增股票
     intm_list_new_stocks = get_list_stock_update(intm_df_report_date)
     intm_df_report_date = pd.concat([intm_df_report_date, pd.DataFrame(columns=intm_list_new_stocks)], axis=1)
 
-    # 加上新增季度/日期
-    intm_list_new_quarters, tmp_dt_new_quarters = [], next_quarter(max(intm_df_report_date.index))
-    while tmp_dt_new_quarters<max(ds.get_newest_date_list()):
-        intm_list_new_quarters.append(tmp_dt_new_quarters)
-        tmp_dt_new_quarters = next_quarter(tmp_dt_new_quarters)
-    intm_df_report_date = pd.concat([intm_df_report_date, pd.DataFrame(index=intm_list_new_quarters)], axis=0).sort_index(ascending=True)
+    # 加上新增季度/日期: 若是财报数据，按财报季更新；若是行业数据，于每月第一个交易日更新
+    if 'industry' in str_metric:
+        try:
+            intm_newdays = [min([v for v in ds.get_newest_date_list() if v>intm_df_report_date.index[-1] and v.month!=intm_df_report_date.index[-1].month])]
+        except:
+            intm_newdays = []
+    else:
+        intm_newdays, tmp_dt_new_quarters = [], next_quarter(max(intm_df_report_date.index))
+        while tmp_dt_new_quarters<max(ds.get_newest_date_list()):
+            intm_newdays.append(tmp_dt_new_quarters)
+            tmp_dt_new_quarters = next_quarter(tmp_dt_new_quarters)
+    intm_df_report_date = pd.concat([intm_df_report_date, pd.DataFrame(index=intm_newdays)], axis=0).sort_index(ascending=True)
 
     # 检测当季报告是否全部披露完毕
     intm_df_report_date = update_reports_quarter(str_metric, intm_df_report_date, intm_df_report_date.index[-1])
     intm_df_report_date = update_reports_quarter(str_metric, intm_df_report_date, intm_df_report_date.index[-2])
+    intm_df_report_date = intm_df_report_date.fillna(pd.NaT)
     
     # 将数据空白处填补上相应的空值符号
     if str_metric=='announceDate':
-        intm_df_report_date[intm_df_report_date<=par_dt_start] = np.nan
-    elif str_metric=='industry_sw':
-        intm_df_report_date = intm_df_report_date.fillna('--')
-    elif str_metric=='industry_wind':
-        intm_df_report_date = intm_df_report_date.fillna('---')
+        intm_df_report_date = intm_df_report_date.stack()
+        intm_df_report_date[intm_df_report_date<=par_dt_start] = pd.NaT
+        intm_df_report_date = intm_df_report_date.unstack()
 
-    print(">>> 将数据保存到本地...")
     if 'industry' in str_metric:
+        intm_df_report_date[intm_df_report_date.isin(['--', '---', '----'])] = np.nan
+        intm_df_report_date = intm_df_report_date.applymap(lambda x:x.replace('--', '-') if type(x)==str else x)
         tmp_str_file_name = str(time_to_int(max(intm_df_report_date.index)))+'_'+str_metric+'.csv'
     else:
         tmp_str_file_name = str(time_to_int(max(intm_df_report_date.index)))+'_report_'+str_metric+'.csv'
     intm_df_report_date.to_csv(str_path+tmp_str_file_name, encoding='utf_8_sig')
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     
     return 0
 
@@ -631,11 +650,14 @@ def update_reports(str_metric, str_path):
 # 更新股指期货合约列表
 def update_ticker_cfe():
     ''' 更新股指期货合约列表 '''
-    intm_df_data = ds.read_file("ticker_CFE")
+    
+    str_metric = "ticker_CFE"
+    log_msg("开始更新 %s 行情数据..."%str_metric)
+    intm_df_data = ds.read_file(str_metric)
     
     str_start_date = time_to_str(par_dt_today - datetime.timedelta(days=90))
     str_end_date   = time_to_str(par_dt_today)
-    for u in ['IC.CFE', 'IF.CFE', 'IH.CFE']:
+    for u in ['IC.CFE', 'IF.CFE', 'IH.CFE', 'IM.CFE', 'T.CFE', 'TF.CFE', 'TS.CFE']:
         intm_raw_new_cfe = wind_func_wset(u, str_start_date, str_end_date)
         intm_df_new_cfe  = pd.DataFrame(intm_raw_new_cfe.Data, index=intm_raw_new_cfe.Fields, columns=intm_raw_new_cfe.Data[2]).T
         # intm_df_new_cfe.index = intm_df_new_cfe['code']
@@ -647,15 +669,16 @@ def update_ticker_cfe():
     log_msg("将数据保存到本地...")
     tmp_str_file_name = str(time_to_int(par_dt_today))+'_ticker_CFE.csv'
     intm_df_data.to_csv(par_str_path_ticker+tmp_str_file_name, encoding='utf_8_sig')
-    
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
     
 
 # 更新可转债数据
 def update_ticker_cb():
     ''' 更新可转债数据 '''
-    print(">>> %s| 更新可转债代码列表..."%str_hours(0))
+    str_metric = 'ticker_cb'
     
+    log_msg("开始更新 %s 行情数据..."%str_metric)
     # 读取现存的可转债列表, 并查询最近90日新上市交易的可转债
     tmp_df_tickers = ds.read_file('ticker_cb')
     tmp_newest_dates = max(ds.get_newest_date_list())
@@ -677,16 +700,13 @@ def update_ticker_cb():
             
             tmp_raw_Ashare_issue  = wind_func_wss(tmp_str_tickers, 'asharewindcode,term,issueamount,carrydate,carryenddate,ipo_date')
             tmp_df_Ashare_issue   = pd.DataFrame(tmp_raw_Ashare_issue.Data, columns=tmp_raw_Ashare_issue.Codes, index=tmp_list_columns).T
-            
-            tmp_str_tickers_stock = get_ticker_pieces(list(tmp_df_Ashare_issue['StockTicker']), 300)[0]
-            tmp_raw_Ashare_secName  = wind_func_wss(tmp_str_tickers_stock, 'sec_name')
-            tmp_dict_Ashare_secName = dict(zip(tmp_raw_Ashare_secName.Codes, tmp_raw_Ashare_secName.Data[0]))
-            
-            tmp_df_Ashare_issue['StockName'] = tmp_df_Ashare_issue['StockTicker'].apply(lambda x:tmp_dict_Ashare_secName[x])
             tmp_df_Ashare_issue['Issuance']  = tmp_df_Ashare_issue['Issuance'] / 100000000
             
+            for u in tmp_df_Ashare_issue.index:
+                tmp_raw_Ashare_secName  = wind_func_wss(tmp_df_Ashare_issue.loc[u, 'StockTicker'], 'sec_name')
+                tmp_df_Ashare_issue.loc[u, 'StockName'] = tmp_raw_Ashare_secName.Data[0][0]
+            
             tmp_df_tickers_add = pd.concat([tmp_df_tickers_add, tmp_df_Ashare_issue], axis=1).dropna()
-            # tmp_df_tickers = tmp_df_tickers.append(tmp_df_tickers_add)
             tmp_df_tickers = pd.concat([tmp_df_tickers, tmp_df_tickers_add], axis=0)
 
     # 赎回公告日
@@ -698,18 +718,22 @@ def update_ticker_cb():
     
     tmp_df_tickers['DateRedeemNotice'] = tmp_df_redeem_date
 
+    # 清除掉定向转债（转债名称包含“定转”，“定0”字样）
+    tmp_df_tickers.BondName = tmp_df_tickers.BondName.apply(lambda x:'定向转债' if ('定转'in x or '定0' in x) else x)
+    tmp_df_tickers = tmp_df_tickers[tmp_df_tickers.BondName != '定向转债']
+    
     # 数据保存到本地
-    log_msg("将数据保存到本地...")
     tmp_df_tickers.to_csv(par_str_path_ticker+str(time_to_int(par_dt_today))+'_ticker_cb.csv', encoding='utf_8_sig')
-
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
 # 更新全市场股票列表信息，最新数据
 def update_ticker_list():
     ''' 更新全市场股票列表信息，最新数据 '''
+    str_metric = 'ticker_stock'
     
-    print(">>> %s| 更新股票代码列表..."%str_hours(0))
+    log_msg("开始更新 %s 行情数据..."%str_metric)
     intm_df_ticker_list = ds.read_file('ticker_stock')
     
     # 检索全市场现存股票
@@ -734,7 +758,7 @@ def update_ticker_list():
     
     # 保存到本地
     intm_df_ticker_list.to_csv(par_str_path_ticker+str(time_to_int(par_dt_today))+'_ticker_stock.csv', encoding='utf_8_sig')
-
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -742,18 +766,21 @@ def update_ticker_list():
 def update_ticker_option():
     ''' 更新全市场期权列表信息，最新数据 '''
     
-    log_msg("更新股期权代码列表...")
+    str_metric = 'ticker_option'
+    log_msg("开始更新 %s 行情数据..."%str_metric)
     intm_df_ticker_list = ds.read_file('ticker_option')
 
     tmp_raw_510050 = wind_func_wset('ticker_option_510050.OF', time_to_str(par_dt_today), 0)
     tmp_raw_510300 = wind_func_wset('ticker_option_510300.OF', time_to_str(par_dt_today), 0)
     tmp_raw_159919 = wind_func_wset('ticker_option_159919.OF', time_to_str(par_dt_today), 0)
+    tmp_raw_000852 = wind_func_wset('ticker_option_000852.SH', time_to_str(par_dt_today), 0)
     
     # tmp_df_tickers = pd.DataFrame(tmp_raw_510050.Data, index=tmp_raw_510050.Fields, columns=tmp_raw_510050.Codes).T\
     #          .append(pd.DataFrame(tmp_raw_510300.Data, index=tmp_raw_510300.Fields, columns=tmp_raw_510300.Codes).T)\
     #          .append(pd.DataFrame(tmp_raw_159919.Data, index=tmp_raw_159919.Fields, columns=tmp_raw_159919.Codes).T)
     tmp_df_tickers = pd.concat([pd.DataFrame(tmp_raw_510050.Data, index=tmp_raw_510050.Fields, columns=tmp_raw_510050.Codes).T, 
                                 pd.DataFrame(tmp_raw_510300.Data, index=tmp_raw_510300.Fields, columns=tmp_raw_510300.Codes).T, 
+                                pd.DataFrame(tmp_raw_159919.Data, index=tmp_raw_159919.Fields, columns=tmp_raw_159919.Codes).T, 
                                 pd.DataFrame(tmp_raw_159919.Data, index=tmp_raw_159919.Fields, columns=tmp_raw_159919.Codes).T], axis=0)
     
     # intm_df_ticker_list = intm_df_ticker_list.append(tmp_df_tickers).sort_values('option_name', ascending=True)
@@ -763,6 +790,7 @@ def update_ticker_option():
     intm_df_ticker_list.index = range(len(intm_df_ticker_list))
     
     intm_df_ticker_list.to_csv(par_str_path_ticker+str(time_to_int(par_dt_today))+'_ticker_option.csv', encoding='utf_8_sig')
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -776,7 +804,7 @@ def update_trade_states_dayLimit():
     # st股：涨跌幅不超过5%
     # 注意，涨跌停板的数据是依据st数据推算而来的，更新日期和股票范围均不超过st数据的范围，在更新顺序上也靠后
     str_metric = 'dayLimit'
-    print("\n>>> %s| 开始处理 %s 数据..."%(str_hours(0), str_metric))
+    log_msg("开始处理 %s 数据..."%str_metric)
     intm_df_price     = ds.read_file('dayLimit')
     intm_df_ticker_st = ds.read_file('st')
     
@@ -812,9 +840,8 @@ def update_trade_states_dayLimit():
     intm_df_price[intm_df_ticker_st==1] = 5
     
     # 保存数据
-    log_msg("将数据保存到本地...")
     intm_df_price.to_csv(par_str_path_price+str(time_to_int(max(intm_df_price.index)))+'_price_'+str_metric+'.csv', encoding='utf_8_sig')
-
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -823,7 +850,7 @@ def update_trade_states_st():
     ''' 更新交易状态，如ST警示等;注意ST股会返回B股代码 '''
     # 读取现有的交易状态数据
     str_metric = 'st'
-    print("\n>>> %s| 开始处理 %s 数据..."%(str_hours(0), str_metric))
+    log_msg("开始处理 %s 数据..."%str_metric)
     intm_df_price = ds.read_file('st')
     intm_list_tickers = list(intm_df_price.columns)
 
@@ -833,12 +860,12 @@ def update_trade_states_st():
     # 根据新增加的日期更新价格数据
     intm_list_date_update = get_list_date_update(intm_df_price)
     if len(intm_list_date_update) == 0:
-        print(">>> %s| %s 数据已是最新的..."%(str_hours(0), str_metric))
+        log_msg(" %s 数据已是最新的..."%str_metric)
     else:
         data_df_price_update = pd.DataFrame(0, index=intm_list_date_update, columns=list(intm_df_ticker_list.index))
         for u in intm_list_date_update:
             str_time = str(time_to_int(u))
-            print(">>> %s| 正在提取 %s 的 %s 数据..."%(str_hours(0), str_time, str_metric))
+            log_msg("正在提取 %s 的 %s 数据..."%(str_time, str_metric))
             # 注意有三类不同的股票：st类，未上市/已退市，正常交易
             # tmp_raw_data = w.wset("sectorconstituent","date="+str_time+";sectorid=1000006526000000")
             tmp_raw_data = wind_func_wset(str_metric, str_time, 0)
@@ -855,9 +882,8 @@ def update_trade_states_st():
         intm_df_price = df_rows_dedu(pd.concat([intm_df_price, data_df_price_update], axis=0)).fillna(-99)
         
     # 保存数据
-    log_msg("将数据保存到本地...")
     intm_df_price.to_csv(par_str_path_price+str(time_to_int(max(intm_df_price.index)))+'_price_'+str_metric+'.csv', encoding='utf_8_sig')
-
+    log_msg("成功保存 %s 行情数据..."%str_metric)
     return 0
 
 
@@ -865,6 +891,7 @@ def update_trade_states_st():
 def update_index_constituent(str_index, str_path):
     ''' 更新股票指数的权重信息 '''
     
+    log_msg("开始更新 %s 成分数据..."%str_index)
     # 读取现有的指数成分数据，注意读取出来的表头是字符不是整形数值
     intm_df_stocks   = ds.read_file(str_index+"_stocks").rename(columns=lambda x:int(x))
     intm_df_weight   = ds.read_file(str_index+"_weight").rename(columns=lambda x:int(x))
@@ -877,7 +904,7 @@ def update_index_constituent(str_index, str_path):
         try:
             tmp_dt_update = min([v for v in intm_list_date_update if v.month!=min(intm_list_date_update).month])
         except:
-            print(">>> 当月指数成分数据已是最新的:", str_index)
+            log_msg("当月指数成分数据已是最新的:" + str_index)
             return 0
     else:
         tmp_dt_update = max([v for v in intm_list_date_update if v.month==min(intm_list_date_update).month])
@@ -907,8 +934,37 @@ def update_index_constituent(str_index, str_path):
         
         return 0
     else:
-        print(">>> 当月指数成分数据为空:", tmp_dt_update)
+        log_msg("当月指数成分数据为空:"+ tmp_dt_update)
         return 0
+    log_msg("成功保存 %s 成分数据..."%str_metric)
+
+
+# 更新金融期货的分钟数据
+def update_minute_cfe(path_cfe):
+    '''
+    更新期货的分钟数据   
+    '''
+    dt_date = max(ds.get_newest_date_list())
+    
+    log_msg("开始处理期货分钟数据...")
+    tmp_df_tickers_cfe = ds.load_tickers('CFE')[ds.load_tickers('CFE').last_trade_date>=dt_date-datetime.timedelta(days=10)]
+    for ii in range(len(tmp_df_tickers_cfe)):
+        str_date_end   = time_to_str(min(tmp_df_tickers_cfe['last_trade_date'].iloc[ii], dt_date))
+        str_date_start = time_to_str(dt_date - datetime.timedelta(days=365))
+        str_ticker     = tmp_df_tickers_cfe.index[ii]
+        print(' -> '+str(ii), end="\r")
+        log_msg(str(ii)+'_'+str_ticker, print_option=False)
+        
+        tmp_df_minute = wind_func_wsi(str_ticker, str_date_start, str_date_end)
+        if len(tmp_df_minute)>10:
+            tmp_df_minute['ticker'] = str_ticker
+            tmp_str_day = str(time_to_int(tmp_df_minute.index.max()))
+            tmp_df_minute.to_csv(path_cfe+tmp_str_day+'_'+str_ticker+'.csv', encoding='utf_8_sig')
+
+    log_msg("成功保存期货分钟数据...")
+    return 0
+
+
 
 
 # 更新期权的分钟数据
@@ -918,14 +974,15 @@ def update_minute_option(path_option, path_etf):
     '''
     dt_date = max(ds.get_newest_date_list())
     
-    print("\n>>> %s| 开始处理期权分钟数据..."%str_hours(0))
+    log_msg("开始处理期权分钟数据...")
     tmp_df_tickers_option = ds.load_tickers('option')[ds.load_tickers('option').last_tradedate>=dt_date-datetime.timedelta(days=10)]
     tmp_df_tickers_option = tmp_df_tickers_option[['option_code', 'last_tradedate']].drop_duplicates(keep='first')
     for ii in range(len(tmp_df_tickers_option)):
-        print(' -> '+str(ii), end="\r")
         str_date_end   = time_to_str(min(tmp_df_tickers_option['last_tradedate'].iloc[ii], dt_date))
         str_date_start = time_to_str(dt_date - datetime.timedelta(days=365))
         str_ticker     = tmp_df_tickers_option.option_code.iloc[ii]
+        print(' -> '+str(ii), end="\r")
+        log_msg(str(ii)+'_'+str_ticker, print_option=False)
         
         tmp_df_minute = wind_func_wsi(str_ticker, str_date_start, str_date_end)
         if len(tmp_df_minute)>10:
@@ -933,7 +990,8 @@ def update_minute_option(path_option, path_etf):
             tmp_str_day = str(time_to_int(tmp_df_minute.index.max()))
             tmp_df_minute.to_csv(path_option+tmp_str_day+'_'+str_ticker+'.csv', encoding='utf_8_sig')
             
-    print("\n>>> %s| 开始处理标的ETF的分钟数据..."%str_hours(0))
+    log_msg("成功保存期权分钟数据...")
+    log_msg("开始处理标的ETF的分钟数据...")
     tmp_df_price   = ds.read_file("minu_etf")
     str_date_start = time_to_str(tmp_df_price.index.max() + datetime.timedelta(days=1))
     str_date_end   = time_to_str(dt_date)
@@ -950,8 +1008,7 @@ def update_minute_option(path_option, path_etf):
     # tmp_df_price = tmp_df_price.append(tmp_df_510050).append(tmp_df_510300).append(tmp_df_159919)
     tmp_df_price = pd.concat([tmp_df_price, tmp_df_510050, tmp_df_510300, tmp_df_159919], axis=0)
     tmp_df_price.to_csv(path_etf+str(time_to_int(dt_date))+'_minu_etf.csv', encoding='utf_8_sig')
-    log_msg("将数据保存到本地...")
-
+    log_msg("成功保存ETF分钟数据...")
     return 0
 
 
@@ -1027,7 +1084,7 @@ def update_minute_day(str_security, str_path_in, str_path_out, max_try=200):
 def update_30minute(str_security, str_path_in, str_path_out):
     ''' 更新30分钟数据 '''
     
-    print("\n>>> %s| 开始处理 %s 数据..."%(str_hours(0), str_security))
+    log_msg("开始处理 %s 数据..."%str_security)
     set_list_timesep = [945, 1015, 1045, 1115, 1315, 1345, 1415, 1445]
     data_df_tickers_cb    = ds.read_file("ticker_cb")
 
@@ -1067,6 +1124,7 @@ def update_30minute(str_security, str_path_in, str_path_out):
     intm_df_minu_cb_close.to_csv( str_path_out+intm_str_date_new+"_30minu_"+str_security+"_close.csv",  encoding='utf_8_sig')
     intm_df_minu_cb_amount.to_csv(str_path_out+intm_str_date_new+"_30minu_"+str_security+"_amount.csv", encoding='utf_8_sig')
 
+    log_msg("成功保存 %s 数据..."%str_security)
     return 0
     
     
