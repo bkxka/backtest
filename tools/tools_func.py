@@ -74,6 +74,26 @@ def df_filter(df_data, str_rule, flt_value):
     return df_result
     
 
+# winsorize去极值
+def df_winsorize(df_data, flt_precision):
+    ''' winsorize去极值 '''
+
+    rst_data, tmp_rst = pd.DataFrame(), pd.DataFrame()
+    for ii in range(len(df_data)):
+        tmp_data = df_data.iloc[ii]
+        upper, lower = tmp_data.quantile(1-flt_precision), tmp_data.quantile(flt_precision)
+        tmp_data[tmp_data>upper] = upper
+        tmp_data[tmp_data<lower] = lower
+        tmp_rst = pd.concat([tmp_rst, tmp_data.to_frame().T], axis=0)
+        
+        if ii%100==99:
+            rst_data = pd.concat([rst_data, tmp_rst], axis=0)
+            tmp_rst = pd.DataFrame()
+
+    rst_data = pd.concat([rst_data, tmp_rst], axis=0)
+    return rst_data
+
+
 # 分值变换
 def df_rescale_score(df_pool, df_scores, method):
     ''' 
@@ -135,18 +155,37 @@ def df_cut_sum(df_data, list_sep):
     df_result = pd.DataFrame(columns=df_data.columns)
     for u in list_sep:
         tmp_df      = tmp_df_data.loc[:u]
-        df_result   = df_result.append(pd.DataFrame(tmp_df.sum(axis=0).rename(u, inplace=True)).T)
+        # df_result   = df_result.append(pd.DataFrame(tmp_df.sum(axis=0).rename(u, inplace=True)).T)
+        df_result   = pd.concat([df_result, pd.DataFrame(tmp_df.sum(axis=0).rename(u, inplace=True)).T], axis=0)
         try:
             tmp_df_data = tmp_df_data.loc[u:].iloc[1:]
         except:
             break
         
     if len(tmp_df_data)>0:
-        df_result   = df_result.append(pd.DataFrame(tmp_df_data.sum(axis=0).rename(tmp_df_data.index[-1], inplace=True)).T)
+        # df_result   = df_result.append(pd.DataFrame(tmp_df_data.sum(axis=0).rename(tmp_df_data.index[-1], inplace=True)).T)
+        df_result   = pd.concat([df_result, pd.DataFrame(tmp_df_data.sum(axis=0).rename(tmp_df_data.index[-1], inplace=True)).T], axis=0)
     
     return df_result
 
 
+# 半衰期移动平均
+def df_half_life_decay(df_data, int_start, int_end, multiplier):
+    ''' 
+    半衰期移动平均
+    在数据的本体上修改，返回一个新的dataframe
+    '''
+    
+    df_result = df_data.copy(deep=True)
+    for ii in range(int_start, int_end):
+        # 本期与上期非空的，采用半衰期算法
+        # 本期为空或上期为空的，不做处理
+        tmp_xx = pd.concat([df_result.iloc[ii-1], df_result.iloc[ii]], axis=1).dropna()
+        tmp_yy = tmp_xx.iloc[:, 0] * multiplier + tmp_xx.iloc[:, 1] * (1-multiplier) 
+        tmp_yy = tmp_yy.to_frame().T.rename(index={0:df_result.index[ii]})
+        df_result.loc[tmp_yy.index, tmp_yy.columns] = tmp_yy
+
+    return df_result
 
 
 
@@ -184,6 +223,10 @@ next_quarter = lambda x:dt.datetime(x.year,6,30)  if x.month==3 else\
                         dt.datetime(x.year,9,30)  if x.month==6 else\
                         dt.datetime(x.year,12,31) if x.month==9 else\
                         dt.datetime(x.year+1,3,31)                      # 下一个(财报)季
+last_quarter = lambda x:dt.datetime(x.year-1,12,31) if x.month==3 else\
+                        dt.datetime(x.year,3,31)    if x.month==6 else\
+                        dt.datetime(x.year,6,30)    if x.month==9 else\
+                        dt.datetime(x.year,9,30)                      # 下一个(财报)季
 
 # 打印当下时间/日期
 def str_hours(x=0):
@@ -237,29 +280,56 @@ def get_ticker_pieces(list_tickers, int_piece=100):
     return list_tickers_piece
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+# 文件夹操作
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
 # 文件夹操作
 # 删除旧的数据文件
 def remove_file(path, int_split=8, keep='new'):
     ''' 根据指标删除旧的数据文件 '''
     # 注意操作规范，在更新程序的最后一步删除掉旧的数据文件
     # 基础逻辑：搜索文件夹内全部日期不同的同名文件，保留日期较新的，删除日期较早的
-    print("\n>>> %s| 清空旧的历史数据 %s"%(str_hours(0),path))
-    intm_list_files = os.listdir(path)
-    intm_list_files_essential = list(set([v[int_split:] for v in intm_list_files]))
-    for p in intm_list_files_essential:
-        intm_list_all = [v for v in intm_list_files if v[int_split:]==p]
-        if keep == 'new':
-            intm_int_keep = max([v[:int_split] for v in intm_list_all])
-        elif keep == 'old':
-            intm_int_keep = min([v[:int_split] for v in intm_list_all])
-        intm_list_drop = [v for v in intm_list_all if v!=intm_int_keep+p]
-        for q in intm_list_drop:
-            print(">>> %s| 正在删除旧的历史数据 %s ..."%(str_hours(0), q))
-            os.remove(path+q)
+    
+    for a,b,c in os.walk(path):
+        print("\n>>> %s| 清空旧的历史数据 %s"%(str_hours(0),a))
+        intm_list_files = os.listdir(a)
+        
+        if 'minute' in a and ('cb' in a or 'stock' in a):
+            print(">>> 跳过了文件夹", a)
+            pass        # 写死一个绕路逻辑，避免删除特定文件夹的任何数据
+        else:
+            if len([v for v in intm_list_files if '.csv' in v])>1:
+                intm_list_files_essential = list(set([v[int_split:] for v in intm_list_files]))
+                
+                for p in intm_list_files_essential:
+                    intm_list_all = [v for v in intm_list_files if v[int_split:]==p]
+                    if keep == 'new':
+                        intm_int_keep = max([v[:int_split] for v in intm_list_all])
+                    elif keep == 'old':
+                        intm_int_keep = min([v[:int_split] for v in intm_list_all])
+                    intm_list_drop = [v for v in intm_list_all if v!=intm_int_keep+p]
+                    for q in intm_list_drop:
+                        print(">>> %s| 正在删除旧的历史数据 %s ..."%(str_hours(0), q))
+                        os.remove(a+'\\'+q)
             
     return 0
 
 
+# 文件夹操作
+# 遍历文件夹，读取所有后缀为 csv 的文件
+def get_list_files(path):
+
+    list_files, list_folders = [], []
+    for a,b,c in os.walk(path):
+        list_folders.append(a)
+        for u in c:
+            if u[-4:]=='.csv':
+                list_files.append(a+'\\'+u)
+
+    return list_files, list_folders
 
 
 
