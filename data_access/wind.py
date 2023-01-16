@@ -18,7 +18,6 @@ from tools.tools_func import *
 
 # 参数设置
 par_dct_order_type = {'exlarge':'1', 'large':'2', 'middle':'3', 'small':'4'}
-par_dct_industry_type = {'industry_sw':'1', 'industry_wind':'2'}
 par_dct_shhk = {'sh_buy_amount':'SHHK_BUY_AMT', 'sh_sell_amount':'SHHK_SELL_AMT', 'hk_buy_amount':'HKSH_BUY_AMT', 'hk_sell_amount':'HKSH_SELL_AMT'}
 par_dct_szhk = {'sz_buy_amount':'SZHK_BUY_AMT', 'sz_sell_amount':'SZHK_SELL_AMT', 'hk_buy_amount':'HKSZ_BUY_AMT', 'hk_sell_amount':'HKSZ_SELL_AMT'}
 par_dct_cb   = {'valueStock':'convvalue', 'valueBond':'strbvalue', 'convPrice':'convprice', 'convDilution':'ldiluterate', 'impliedVol':'impliedvol'}
@@ -76,6 +75,9 @@ def wind_func_wss(str_tickers_piece, str_metric, str_date=None):
                 tmp_raw_price = w.wss(str_tickers_piece, "amt","tradeDate="+str_date+";cycle=D")
             elif str_metric == 'etf_netvalue':
                 tmp_raw_price = w.wss(str_tickers_piece, "nav","tradeDate="+str_date)
+        # 基金单日复权净值变动率
+        elif str_metric == 'fund_dayReturn':
+            tmp_raw_price = w.wss(str_tickers_piece, "NAV_return_nd","ndays=0;tradeDate="+str_date)
         # 汇率指标
         elif str_metric in ['CFE_close', 'hclose']:
             tmp_raw_price = w.wss(str_tickers_piece, "close","tradeDate="+str_date+";priceAdj=U;cycle=D")
@@ -106,8 +108,12 @@ def wind_func_wss(str_tickers_piece, str_metric, str_date=None):
             tmp_raw_price = w.wss(str_tickers_piece, "mfd_buyamt_d","unit=1;tradeDate="+str_date+";traderType="+par_dct_order_type[str_metric.split('_')[-1]])
         elif 'sell' in str_metric:
             tmp_raw_price = w.wss(str_tickers_piece, "mfd_sellamt_d","unit=1;tradeDate="+str_date+";traderType="+par_dct_order_type[str_metric.split('_')[-1]])
-        elif str_metric in ['industry_sw', 'industry_wind']:
-            tmp_raw_price = w.wss(str_tickers_piece, "industry2","industryType="+par_dct_industry_type[str_metric]+";industryStandard=5;tradeDate="+str_date)
+        elif str_metric == 'industry_sw':
+            tmp_raw_price = w.wss(str_tickers_piece, "industry_sw_2021","tradeDate="+str_date+";industryType=4")
+        elif str_metric == 'industry_citic':
+            tmp_raw_price = w.wss(str_tickers_piece, str_metric,"tradeDate="+str_date+";industryType=4")
+        elif str_metric == 'industry_wind':
+            tmp_raw_price = w.wss(str_tickers_piece, "industry2","industryType=2;industryStandard=5;tradeDate="+str_date)
         else:
             tmp_raw_price = w.wss(str_tickers_piece, str_metric,"tradeDate="+str_date+";priceAdj=U;cycle=D")
     else:
@@ -184,10 +190,10 @@ def wind_func_wset(str_metric, str_start_date, str_end_date):
         tmp_int_month = int(str_start_date.split('-')[1])
         tmp_str_quarter = 's1' if tmp_int_month == 3 else 'h1' if tmp_int_month == 6 else\
                           's3' if tmp_int_month == 9 else 'y1' if tmp_int_month == 12 else None
-        tmp_raw_price = w.wset(str_metric,"orderby=报告期;year="+tmp_str_year+";period="+tmp_str_quarter+";sectorid=a001010100000000")
+        tmp_raw_price = w.wset(str_metric,"orderby=period;year="+tmp_str_year+";period="+tmp_str_quarter+";sectorid=a001010100000000")
     elif str_metric in ['000300.SH', '000905.SH', '000852.SH', '000832.CSI']:
         tmp_raw_price = w.wset("indexconstituent",'date='+str_start_date+';windcode='+str_metric)
-    elif str_metric in ['IF.CFE', 'IH.CFE', 'IC.CFE']:
+    elif str_metric in ['IF.CFE', 'IH.CFE', 'IC.CFE', 'IM.CFE', 'T.CFE', 'TF.CFE', 'TS.CFE']:
         tmp_raw_price = w.wset("futurecc","startdate="+str_start_date+";enddate="+str_end_date+";wind_code="+str_metric)
     elif str_metric == 'listed_tickers':
         tmp_raw_price = w.wset("listedsecuritygeneralview","sectorid=a001010100000000;field=wind_code,sec_name,ipo_date,sec_type,listing_board,exchange")
