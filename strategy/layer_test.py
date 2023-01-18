@@ -21,10 +21,11 @@ import cx_factor.ahPriceGap as ahpg
 def layer_test(data_df_stockPool, data_df_score, data_df_dayReturn, set_dt_begin_date, int_layers, int_signal=1):
     ''' 分层测试 '''
     
-    data_list_tradingDays = [v for v in list(ds.load_index("index_close").index) if v>=set_dt_begin_date]
+    # data_list_tradingDays = [v for v in list(ds.load_index("index_close").index) if v>=set_dt_begin_date]
     # data_list_tradingDays_repo_signal = list_interval([v for v in data_list_tradingDays if v>= set_dt_begin_date], set_int_reposition_period, 0)
 
-    data_dict_slices = dp.get_df_slices(data_df_score, data_list_tradingDays, data_df_stockPool, int_layers, int_signal)
+    # 删掉多余的 data_list_tradingDays
+    data_dict_slices = dp.get_df_slices(data_df_score, data_df_stockPool, int_layers, int_signal)
     data_dict_return = {v:((data_dict_slices[v]*data_df_dayReturn).fillna(0).sum(axis=1) / data_dict_slices[v].sum(axis=1))\
                             .loc[set_dt_begin_date:].fillna(0) / 100 for v in data_dict_slices}
     data_df_return_base = (data_df_stockPool.shift(int_signal)*data_df_dayReturn).fillna(0).sum(axis=1) / data_df_stockPool.sum(axis=1) / 100

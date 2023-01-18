@@ -183,47 +183,66 @@ def cross_to_sequence(list_tradingDays, data_df_industry_raw):
     for u in tmp_df_date.index:
         dt_head, dt_tail = tmp_df_date.loc[u,0], tmp_df_date.loc[u,1]
         tmp_list_date = [v for v in list_tradingDays if v>dt_head and v<=dt_tail]
-        # tmp_df_data   = pd.DataFrame().append([data_df_industry_raw.loc[dt_head].to_frame().T]*len(tmp_list_date))
-        tmp_df_data   = pd.concat([data_df_industry_raw.loc[dt_head].to_frame().T]*len(tmp_list_date), axis=0)
-        tmp_df_data.index = tmp_list_date
-        # intm_df_industry = intm_df_industry.append(tmp_df_data)
-        intm_df_industry = pd.concat([intm_df_industry, tmp_df_data], axis=0)
+        if len(tmp_list_date)>0:
+            tmp_df_data   = pd.concat([data_df_industry_raw.loc[dt_head].to_frame().T]*len(tmp_list_date), axis=0)
+            tmp_df_data.index = tmp_list_date
+            intm_df_industry = pd.concat([intm_df_industry, tmp_df_data], axis=0)
         
     return intm_df_industry
 
 
-# 将结构化的股票成分-权重数据转化成股票权重二维表
-def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_close_cb):
+# # 将结构化的股票成分-权重数据转化成股票权重二维表
+# def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_close_cb):
+#     ''' 将结构化的股票成分-权重数据转化成股票权重二维表 '''
+    
+    # if (list(data_df_index_stocks.index) != list(data_df_index_weight.index))\
+    #     or (list(data_df_index_stocks.columns) != list(data_df_index_weight.columns)):
+    #     print(">>> wrong data imput ...")
+    #     return None
+
+    # data_df_index_constitution = pd.DataFrame()
+    # for u in data_df_index_weight.index:
+    #     tmp_df_cons = pd.concat([data_df_index_stocks.loc[u].to_frame().rename(columns={u:0}), data_df_index_weight.loc[u]], axis=1).dropna().set_index(0)
+    #     # data_df_index_constitution = data_df_index_constitution.append(tmp_df_cons.T).fillna(0)
+    #     data_df_index_constitution = pd.concat([data_df_index_constitution, tmp_df_cons.T], axis=0).fillna(0)
+        
+    # tmp_df_index_constitution = cross_to_sequence(list(data_df_close_cb.index), data_df_index_constitution)
+
+    # # 将权重股重新组织成二维表的标准形式
+    # data_df_index_constitution = pd.DataFrame()
+    # for u in data_df_close_cb.columns:
+    #     data_df_index_constitution = pd.concat([data_df_index_constitution, 
+    #                                             tmp_df_index_constitution[[u]] if u in tmp_df_index_constitution.columns else pd.DataFrame(columns=[u])], axis=1)
+    # # 根据转债价格变动校正指数权重
+    # tmp_u = data_df_index_constitution.index[0]
+    # for u in data_df_index_constitution.index:
+    #     if u in data_df_index_stocks.index:
+    #         tmp_u = u
+    #     else:
+    #         data_df_index_constitution.loc[u] = data_df_index_constitution.loc[u] * (data_df_close_cb.loc[u] / data_df_close_cb.loc[tmp_u])
+    # data_df_index_constitution = df_index_norm(data_df_index_constitution).replace([np.inf, -np.inf, np.nan], 0)
+
+    # return data_df_index_constitution
+    
+def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_dayReturn):
     ''' 将结构化的股票成分-权重数据转化成股票权重二维表 '''
     
-    if (list(data_df_index_stocks.index) != list(data_df_index_weight.index))\
-        or (list(data_df_index_stocks.columns) != list(data_df_index_weight.columns)):
-        print(">>> wrong data imput ...")
-        return None
-
-    data_df_index_constitution = pd.DataFrame()
-    for u in data_df_index_weight.index:
-        tmp_df_cons = pd.concat([data_df_index_stocks.loc[u].to_frame().rename(columns={u:0}), data_df_index_weight.loc[u]], axis=1).dropna().set_index(0)
-        # data_df_index_constitution = data_df_index_constitution.append(tmp_df_cons.T).fillna(0)
-        data_df_index_constitution = pd.concat([data_df_index_constitution, tmp_df_cons.T], axis=0).fillna(0)
-        
-    tmp_df_index_constitution = cross_to_sequence(list(data_df_close_cb.index), data_df_index_constitution)
-
-    # 将权重股重新组织成二维表的标准形式
-    data_df_index_constitution = pd.DataFrame()
-    for u in data_df_close_cb.columns:
-        data_df_index_constitution = pd.concat([data_df_index_constitution, 
-                                                tmp_df_index_constitution[[u]] if u in tmp_df_index_constitution.columns else pd.DataFrame(columns=[u])], axis=1)
-    # 根据转债价格变动校正指数权重
-    tmp_u = data_df_index_constitution.index[0]
-    for u in data_df_index_constitution.index:
-        if u in data_df_index_stocks.index:
-            tmp_u = u
-        else:
-            data_df_index_constitution.loc[u] = data_df_index_constitution.loc[u] * (data_df_close_cb.loc[u] / data_df_close_cb.loc[tmp_u])
-    data_df_index_constitution = df_index_norm(data_df_index_constitution).replace([np.inf, -np.inf, np.nan], 0)
-
-    return data_df_index_constitution
+    data_df_index_composition = pd.DataFrame(index=data_df_dayReturn.index, columns=data_df_dayReturn.columns)
+    for ii in range(1, len(data_df_index_composition.index)):
+        tmp_today   = data_df_index_composition.index[ii]
+        tmp_lastday = data_df_index_composition.index[ii-1]
+        try:
+            # tmp_df = pd.Series(data_df_index_weight.loc[tmp_today].values, index=data_df_index_stocks.loc[tmp_today]).dropna()
+            tmp_df = pd.concat([data_df_index_stocks.loc[tmp_today], data_df_index_weight.loc[tmp_today]], axis=1).dropna()
+            tmp_df.columns = [0, 1]
+            tmp_df = tmp_df.groupby(0).sum()[1]
+            tmp_df = tmp_df.loc[[v for v in tmp_df.index if v[0]!='T']]
+            data_df_index_composition.loc[tmp_today, tmp_df.index] = tmp_df
+            # print(tmp_today)
+        except:
+            data_df_index_composition.loc[tmp_today] = data_df_index_composition.loc[tmp_lastday] * (1 + data_df_dayReturn.loc[tmp_today])
+    data_df_index_composition = df_index_norm(data_df_index_composition.fillna(0)).dropna()
+    return data_df_index_composition
 
 
 # 获取调仓日列表
