@@ -56,7 +56,7 @@ def read_file(str_metric):
     list_files_cand = [v for v in list_files if str_metric in v]
     
     # 修正查询字段
-    if str_metric in ['st', 'low', 'vwap', 'close', 'mktcap', 'amount', 'dayReturn']:
+    if str_metric in ['st', 'high', 'low', 'vwap', 'open', 'close', 'mktcap', 'amount', 'dayReturn']:
         list_files_cand = [v for v in list_files_cand if 'price_'+str_metric in v]
     if 'minu' not in str_metric:
         list_files_cand = [v for v in list_files_cand if 'minu' not in v]
@@ -72,7 +72,6 @@ def read_file(str_metric):
         if str_metric[:10] in ['000300.SH_', '000905.SH_', '000852.SH_', '000832.CSI'] \
         or str_metric in ['index_close', 'CFE_close', 'etf_close', 'etf_netvalue', 'etf_amount',
                           'netQProfit', 'netQCashflowOper', 'netEquity', 'announceDate', 
-                          'industry_sw', 'industry_wind',
                           'currency', 'shszhkFlow',
                           'open', 'high', 'low', 'close', 'hclose', 'vwap', 'adjfactor', 'mktcap', 'dayReturn', 'st', 
                           'dayLimit', 'shszhkHold', 'amount', 'floatAmktcap', 'beta300', 'beta905',
@@ -82,6 +81,11 @@ def read_file(str_metric):
             intm_df_file = pd.read_csv(max(list_files_cand), index_col=0, encoding='utf_8_sig')
             if str_metric == 'announceDate':
                 intm_df_file = intm_df_file.applymap(lambda x:str_to_time(x) if type(x)==str else x)
+            intm_df_file = df_index_time(intm_df_file)
+            
+        elif str_metric in ['industry_sw', 'industry_wind','industry_citic']:
+            intm_df_file = pd.read_csv(max(list_files_cand), index_col=0, encoding='utf_8_sig', low_memory=False)\
+                             .replace([0, '0', '--', '---', '----'], np.nan)
             intm_df_file = df_index_time(intm_df_file)
             
         elif str_metric in ['analyst_forecast', 'bonus', 'insiderTrade']\
