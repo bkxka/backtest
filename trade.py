@@ -342,11 +342,9 @@ def trade_minute_simulation(stgy_df_trade_signal, stgy_df_cb_full, df_minute, se
         # 抽取价格数据进行处理
         intm_df_minute = df_minute.T[[tmp_dt_b]].sort_index(ascending=True).fillna(method='ffill').rename(columns={tmp_dt_b:'price'})
         intm_df_minute['position']   = stgy_df_trade_signal.loc[tmp_dt_a, 'position_stock']
-        # intm_df_minute['price_base'] = tmp_flt_price
         
         tmp_se_delta = stgy_df_cb_full.loc[tmp_dt_b, ['close_stock', 'strike_price', 'maturity', 'riskfree', 'hv']]
         tmp_se_delta.index = ['S', 'K', 'T', 'r', 'sigma']
-        # op.find_delta_row(tmp_se_delta)
         tmp_flt_stock_position_factor = -stgy_df_trade_signal.loc[tmp_dt_a, 'position_cb'] * stgy_df_cb_full.loc[tmp_dt_a, 'conv_rate']
         
         # 日内波段操作：上涨卖出，下跌买入

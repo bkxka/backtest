@@ -11,19 +11,9 @@ import numpy as np
 import datetime as dt
 from scipy.stats import linregress
 
-# import sys
-# if 'C:\InvestmentResearch\chiyeguang\\backtest' not in sys.path:
-#     sys.path.append('C:\InvestmentResearch\chiyeguang\\backtest')
 import dataprocess as dp
 import dataset as ds
-
 from tools.tools_func import *
-# list_compare = lambda x,y:True if ((len([v for v in x if v not in y]) == 0) and (len([v for v in y if v not in x]) == 0)) else False
-
-
-
-
-
 
 
 ''' 生成选股策略 '''
@@ -60,7 +50,6 @@ def get_intm_process_test(stgy_df_topStocks, data_df_trade, data_df_close_adj, d
     tmp_int_holding_num = len(stgy_df_topStocks.iloc[0,:].dropna())
     intm_holding_stocks.iloc[0] = stgy_df_topStocks.iloc[0,:]
     intm_holding_position.iloc[0,:tmp_int_holding_num] = 1 / tmp_int_holding_num
-    #tmp_dict_holdings = {v:(1/tmp_int_holding_num) for v in stgy_df_topStocks.iloc[0,:].dropna()}
     tmp_df_holdings = pd.DataFrame([{v:(1/tmp_int_holding_num) for v in stgy_df_topStocks.iloc[0,:].dropna()}])
     
     # 循环初始化
@@ -146,27 +135,19 @@ def get_slices_return(set_int_slices, stgy_df_scores, data_df_stocks_pool, data_
                       set_flt_riskfree_rate, data_df_crowdedTrade, set_bool_tradeLimit, set_bool_progressReport):
     
     print('>>> 开始生成选股策略, time =', str(dt.datetime.now())[11:21])
-#    set_int_slices = 20
     stgy_list_stockSlice, stgy_int_stocks_uplimit = get_slice_stocks(stgy_df_scores, data_list_tradingDay_reposition, data_df_stocks_pool, set_int_slices)
-    
-#    intm_list_stocks, intm_list_position, intm_list_amount, result_df_netvalue, result_df_pnl = [], [], [], pd.DataFrame(), pd.DataFrame()
     result_df_netvalue, result_df_pnl = pd.DataFrame(), pd.DataFrame()
     for ii in range(set_int_slices):
         
         tmp_df_stocks = stgy_list_stockSlice[ii]
         print('\n>>> testing slices #',ii,' time=',str(dt.datetime.now())[11:21])
         # 交易限制的开关，True选择放开交易限制，False选择
-#        tmp_a, tmp_b, tmp_c, tmp_d = get_intm_process_test(tmp_df_stocks, data_df_trade, data_df_close_adj, data_list_tradingDay_new, data_list_tradingDay_reposition)
         tmp_a, tmp_b, tmp_c, tmp_d = dp.get_intm_process(tmp_df_stocks, data_df_trade, data_df_close_adj, data_df_crowdedTrade, 
                                                          data_list_tradingDay_new, data_list_tradingDay_reposition, set_bool_tradeLimit, set_bool_progressReport)
         tmp_e = dp.get_netvalue_curve(data_df_index, data_list_tradingDay_new, tmp_b, tmp_d, set_str_index, set_flt_fee, set_flt_impact_cost)
         tmp_f = dp.get_return_metrics(tmp_e, data_list_tradingDay_reposition, set_int_reposition_period, set_flt_riskfree_rate)
-#        intm_list_stocks.append(tmp_a)
-#        intm_list_position.append(tmp_b)
-#        intm_list_amount.append(tmp_c)
         xx = tmp_e['marketNeutralReturn'].to_frame().rename(columns={'marketNeutralReturn':ii})
         result_df_netvalue = pd.concat([result_df_netvalue, xx], axis=1)
-        # result_df_pnl = result_df_pnl.append(tmp_f[0].rename(index={tmp_f[0].index[0]:ii}))
         result_df_pnl = pd.concat([result_df_pnl, tmp_f[0].rename(index={tmp_f[0].index[0]:ii})], axis=0)
         
     return result_df_netvalue, result_df_pnl

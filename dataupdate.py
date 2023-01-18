@@ -30,7 +30,6 @@ if True:
     # par_dt_today = datetime.now()                                       # 更新到今日（收盘后）
     par_dt_today = datetime.datetime.now()-datetime.timedelta(days=1)                     # 更新到昨日
     par_str_today = str(time_to_int(par_dt_today))
-    # par_str_path = '/'.join(sys.argv[0].split('\\')[:-1])               # 本脚本的文件夹地址
     par_str_path = "C:/InvestmentResearch/database"               # 本脚本的文件夹地址
     par_str_path_log       = par_str_path + '/log/'
     par_str_path_cb        = par_str_path + '/cb/'
@@ -39,7 +38,6 @@ if True:
     par_str_path_price     = par_str_path + '/price/'
     par_str_path_moneyflow = par_str_path_price + 'moneyflow/'
     par_str_path_report    = par_str_path + '/report/'
-    # par_str_path_bulletin  = par_str_path + '/bulletin/'
     par_str_path_etf       = par_str_path + '/etf/'
     par_str_path_market    = par_str_path + '/market/'
     par_dct_order_type = {'exlarge':'1', 'large':'2', 'middle':'3', 'small':'4'}
@@ -99,7 +97,6 @@ def get_price_ticker_list(str_metric, str_date, list_tickers, int_piece=100):
     for u in list_tickers_piece:
         tmp_raw_price = wind_func_wss(u, str_metric, str_date)
         tmp_df_price = pd.DataFrame(tmp_raw_price.Data[0],columns=[str_date],index=tmp_raw_price.Codes)
-        # intm_df_price = intm_df_price.append(tmp_df_price)
         intm_df_price = pd.concat([intm_df_price, tmp_df_price], axis=0)
         
     # 判断读数是否正常, 若有异常则再次读数：
@@ -111,7 +108,6 @@ def get_price_ticker_list(str_metric, str_date, list_tickers, int_piece=100):
             intm_df_price_normal = intm_df_price.dropna()
             intm_df_price_abnormal = intm_df_price.loc[~intm_df_price.index.isin(intm_df_price_normal.index)]
             intm_df_price_abnormal = get_price_ticker_list(str_metric, str_date, list(intm_df_price_abnormal.index), int_piece)
-            # intm_df_price = intm_df_price_normal.append(intm_df_price_abnormal)
             intm_df_price = pd.concat([intm_df_price_normal, intm_df_price_abnormal], axis=0)
         else:
             pass
@@ -146,10 +142,8 @@ def update_price(str_metric, str_path):
             log_msg('正在提取 %s 的 %s 数据'%(str_time, str_metric))
             tmp_df_price_update = get_price_ticker_list(str_metric, str_time, intm_list_tickers, 50).T
             tmp_df_price_update.index = [u]
-            # data_df_price_update = data_df_price_update.append(tmp_df_price_update)
             data_df_price_update = pd.concat([data_df_price_update, tmp_df_price_update], axis=0)
         # 读取成功的数据拼贴到原有数据上
-        # intm_df_price = df_rows_dedu(intm_df_price.append(data_df_price_update))
         intm_df_price = df_rows_dedu(pd.concat([intm_df_price,data_df_price_update], axis=0))
 
     # 数据清洗整理
@@ -208,7 +202,6 @@ def update_index_close(str_today):
             # 注意，只有一日和有多日所返回的数据结构不完全一致；为了函数结构简单，我们多调用一天的数据（重复调用已有数据的最后一日）
             data_df_index_close_new = pd.DataFrame(data_raw_index_close.Data, columns=data_raw_index_close.Times, index=data_raw_index_close.Codes).T
             data_df_index_close_new = df_index_time(data_df_index_close_new)
-        # data_df_index_close = df_rows_dedu(intm_df_index_close.append(data_df_index_close_new))
         data_df_index_close = df_rows_dedu(pd.concat([intm_df_index_close, data_df_index_close_new], axis=0))
         data_df_index_close.to_csv(par_str_path_index+str(time_to_int(max(data_df_index_close.index)))+'_index_close.csv', encoding='utf_8_sig')
             
@@ -245,7 +238,6 @@ def update_market_shszhkFlow(str_path):
             tmp_df_shszhk = df_index_time(pd.concat([tmp_df_shhk, tmp_df_szhk], axis=1))
         
             # 读取成功的数据拼贴到原有数据上
-            # intm_df_price = df_rows_dedu(intm_df_price.append(tmp_df_shszhk))
             intm_df_price = df_rows_dedu(pd.concat([intm_df_price, tmp_df_shszhk], axis=0))
 
     # 剔除不符合要求的列名，并将nan替换为0
@@ -284,7 +276,6 @@ def update_delta(str_period, str_path):
     if str_period == 'Gar':
         intm_df_vola_stock  = ds.read_file('cb_garchVol') * math.sqrt(250)
     else:
-        # intm_df_vola_stock  = intm_df_dailyReturn.rolling(window=int(str_period)).std().loc[intm_df_blank.index] * math.sqrt(250)
         intm_df_dailyReturn = get_df_dict(data_df_tickers_cb[['StockTicker']], ds.load_price('dayReturn')) / 100
         intm_df_flag_stock  = get_df_dict(data_df_tickers_cb[['StockTicker']], ds.read_file('amount')).applymap(lambda x:1 if x>0 else 0)
         intm_df_vola_stock = pd.DataFrame()
@@ -320,7 +311,6 @@ def update_delta(str_period, str_path):
                         intm_df_close_stock.loc[u, q], intm_df_strike_price.loc[u, q], intm_df_maturity.loc[u, q], 
                         intm_df_riskfree.loc[u, q],    intm_df_vola_stock.loc[u, q])
 
-        # intm_df_delta = intm_df_delta.append(data_df_price_update).sort_index().fillna(0)
         intm_df_delta = pd.concat([intm_df_delta, data_df_price_update], axis=0).sort_index().fillna(0)
 
     tmp_str_fileName = str(time_to_int(max(intm_df_delta.index)))+'_'+str_metric+'.csv'
@@ -382,7 +372,6 @@ def update_garch_vol(str_path):
                 if tmp_int_maturity>0:
                     intm_df_garchVol.loc[u, q] = op.garch_forecast_vol(tmp_df_return_prev, tmp_int_maturity)
                 
-        # data_df_garchVol = data_df_garchVol.append(intm_df_garchVol)
         data_df_garchVol = pd.concat([data_df_garchVol, intm_df_garchVol], axis=0)
     
     tmp_str_fileName = str(time_to_int(max(data_df_garchVol.index)))+'_'+str_metric+'.csv'
@@ -396,8 +385,6 @@ def update_garch_vol(str_path):
 def update_beta(str_metric, period, str_path):
     ''' 更新beta数据 '''
     
-    # str_metric = 'beta905'
-    # period = 0
     data_df_beta = ds.read_file(str_metric)
     log_msg("开始处理 %s 行情数据..."%str_metric)
     
@@ -430,7 +417,6 @@ def update_beta(str_metric, period, str_path):
                     intm_df_beta.loc[u, q] = int(100*res.slope)
                 else:
                     intm_df_beta.loc[u, q] = 0
-        # data_df_beta = data_df_beta.append(intm_df_beta).fillna(0)
         data_df_beta = pd.concat([data_df_beta, intm_df_beta], axis=0).fillna(0)
 
     tmp_str_fileName = str(time_to_int(max(data_df_beta.index)))+'_price_'+str_metric+'.csv'
@@ -455,7 +441,6 @@ def update_market_bonus(str_path):
         tmp_df_data = tmp_df_data[tmp_df_data['reporting_date']!=u]
         tmp_raw_data_update = wind_func_wset(str_metric, time_to_str(u), time_to_str(u))
         tmp_df_data_update = pd.DataFrame(tmp_raw_data_update.Data, index=tmp_raw_data_update.Fields).T
-        # tmp_df_data = tmp_df_data.append(tmp_df_data_update)
         tmp_df_data = pd.concat([tmp_df_data, tmp_df_data_update], axis=0)
         
     tmp_df_data = tmp_df_data.sort_values(by='reporting_date')
@@ -483,7 +468,6 @@ def update_market_currency(str_path):
         for u in tmp_list_dates:
             tmp_raw_currency = wind_func_wss(str_list_tickers, 'close', str(time_to_int(u)))
             tmp_df_currency = pd.DataFrame(tmp_raw_currency.Data[0], index=tmp_raw_currency.Codes, columns=[u])
-            # intm_df_data = intm_df_data.append(tmp_df_currency.T)
             intm_df_data = pd.concat([intm_df_data, tmp_df_currency.T], axis=0)
     
     # 保存数据:注意资金流数据与普通日行情数据有这不同的存储路径
@@ -522,7 +506,6 @@ def update_market_insiderTrade(str_path):
         tmp_df_data_lost = tmp_df_data[(tmp_df_data['StartDate'] > datetime.datetime(1999,1,1))==False]
         tmp_df_data.loc[tmp_df_data_lost.index, 'StartDate'] = tmp_df_data_lost['EndDate'].copy()
         # 读取成功的数据拼贴到原有数据上
-        # intm_df_price = intm_df_price.append(tmp_df_data).sort_values(by='AnnounceDate', ascending=True)
         intm_df_price = pd.concat([intm_df_price, tmp_df_data], axis=0).sort_values(by='AnnounceDate', ascending=True)
         intm_df_price.index = range(len(intm_df_price))
                 
@@ -535,10 +518,8 @@ def update_market_insiderTrade(str_path):
 # 更新某期的全部公告数据
 def update_reports_quarter(str_metric, df_reports_input, dt_quarter):
     ''' 更新某期的全部公告数据 '''
-    # df_reports = intm_df_report_date
-    # dt_quarter = intm_df_report_date.index[-1]
+
     df_reports = df_reports_input.copy(deep=True)
-    
     data_df_report_undisclose = df_reports.loc[dt_quarter].T
     data_df_report_undisclose = data_df_report_undisclose[data_df_report_undisclose.isnull()]
     data_list_undisclose = get_ticker_pieces(list(data_df_report_undisclose.index), 100)
@@ -547,7 +528,6 @@ def update_reports_quarter(str_metric, df_reports_input, dt_quarter):
     for u in data_list_undisclose:
         tmp_raw_report_date_wanke = wind_func_wss(u, str_metric, str(time_to_int(dt_quarter)))
         tmp_df_report_date_wanke = pd.DataFrame(tmp_raw_report_date_wanke.Data[0], index=tmp_raw_report_date_wanke.Codes, columns=[dt_quarter])
-        # data_df_report_date = data_df_report_date.append(tmp_df_report_date_wanke)
         data_df_report_date = pd.concat([data_df_report_date, tmp_df_report_date_wanke], axis=0)
     
     df_reports.loc[dt_quarter, data_df_report_date.index] = (data_df_report_date.T).loc[dt_quarter, data_df_report_date.index]
@@ -580,7 +560,6 @@ def update_analyst_forecast(str_path):
             intm_df_forecast_lastyear['counts'] = intm_df_forecast_lastyear.count(axis=1)
             
             # 按照股票代码、评级机构、评级年份降序排列（同股、同机构的评级会靠在一起，且靠后年份排前面）
-            # intm_df_forecast = intm_df_forecast.append(intm_df_forecast_lastyear).sort_values(by=['wind_code', 'organization', 'rating_year'], ascending=False)
             intm_df_forecast = pd.concat([intm_df_forecast, intm_df_forecast_lastyear], axis=0).sort_values(by=['wind_code', 'organization', 'rating_year'], ascending=False)
             # 再按照股票代码、评级机构、预测指标个数降序排列重新排一次（指标个数相同的会有靠后年份排在前面，保留了前面的排序痕迹）
             # 删除掉预测指标个数更少的记录
@@ -591,8 +570,6 @@ def update_analyst_forecast(str_path):
         intm_df_forecast.index = intm_df_forecast['last_rating_date'].apply(lambda x:str(time_to_int(x))) + '_'\
                                + intm_df_forecast['wind_code'] + '_' + intm_df_forecast['organization']
         intm_df_forecast = intm_df_forecast.sort_index()
-        
-        # intm_df_data = intm_df_data.append(intm_df_forecast)
         intm_df_data = pd.concat([intm_df_data, intm_df_forecast], axis=0)
 
     intm_df_data.to_csv(str_path+str(time_to_int(max(intm_df_data['last_rating_date'])))+'_analyst_forecast.csv', encoding='utf_8_sig')
@@ -660,9 +637,7 @@ def update_ticker_cfe():
     for u in ['IC.CFE', 'IF.CFE', 'IH.CFE', 'IM.CFE', 'T.CFE', 'TF.CFE', 'TS.CFE']:
         intm_raw_new_cfe = wind_func_wset(u, str_start_date, str_end_date)
         intm_df_new_cfe  = pd.DataFrame(intm_raw_new_cfe.Data, index=intm_raw_new_cfe.Fields, columns=intm_raw_new_cfe.Data[2]).T
-        # intm_df_new_cfe.index = intm_df_new_cfe['code']
         intm_df_new_cfe = intm_df_new_cfe[intm_df_data.columns]
-        # intm_df_data = intm_df_data.append(intm_df_new_cfe)
         intm_df_data = pd.concat([intm_df_data, intm_df_new_cfe], axis=0)
         
     intm_df_data = df_rows_dedu(intm_df_data).sort_index(ascending=True)
@@ -682,7 +657,6 @@ def update_ticker_cb():
     # 读取现存的可转债列表, 并查询最近90日新上市交易的可转债
     tmp_df_tickers = ds.read_file('ticker_cb')
     tmp_newest_dates = max(ds.get_newest_date_list())
-    # tmp_raw_tickers = wind_func_wset('ticker_cb', time_to_str(tmp_newest_dates-timedelta(days=360)), time_to_str(tmp_newest_dates-timedelta(days=30)))
     tmp_raw_tickers = wind_func_wset('ticker_cb', time_to_str(tmp_newest_dates-datetime.timedelta(days=30)), time_to_str(tmp_newest_dates))
     tmp_df_tickers_add = pd.DataFrame(tmp_raw_tickers.Data[1], index=tmp_raw_tickers.Data[0]).rename(columns={0:'BondName'}).iloc[:-1]
     
@@ -746,7 +720,6 @@ def update_ticker_list():
     data_df_ticker_list = data_df_ticker_list.loc[data_df_ticker_list.index.isin(list_ticker_bj)==False]
 
     # 与历史记录的股票合并
-    # intm_df_ticker_list = df_rows_dedu(intm_df_ticker_list.append(data_df_ticker_list)).fillna(0)
     intm_df_ticker_list = df_rows_dedu(pd.concat([intm_df_ticker_list, data_df_ticker_list], axis=0)).fillna(0)
     
     # 检索退市股票：
@@ -775,15 +748,11 @@ def update_ticker_option():
     tmp_raw_159919 = wind_func_wset('ticker_option_159919.OF', time_to_str(par_dt_today), 0)
     tmp_raw_000852 = wind_func_wset('ticker_option_000852.SH', time_to_str(par_dt_today), 0)
     
-    # tmp_df_tickers = pd.DataFrame(tmp_raw_510050.Data, index=tmp_raw_510050.Fields, columns=tmp_raw_510050.Codes).T\
-    #          .append(pd.DataFrame(tmp_raw_510300.Data, index=tmp_raw_510300.Fields, columns=tmp_raw_510300.Codes).T)\
-    #          .append(pd.DataFrame(tmp_raw_159919.Data, index=tmp_raw_159919.Fields, columns=tmp_raw_159919.Codes).T)
     tmp_df_tickers = pd.concat([pd.DataFrame(tmp_raw_510050.Data, index=tmp_raw_510050.Fields, columns=tmp_raw_510050.Codes).T, 
                                 pd.DataFrame(tmp_raw_510300.Data, index=tmp_raw_510300.Fields, columns=tmp_raw_510300.Codes).T, 
                                 pd.DataFrame(tmp_raw_159919.Data, index=tmp_raw_159919.Fields, columns=tmp_raw_159919.Codes).T, 
                                 pd.DataFrame(tmp_raw_159919.Data, index=tmp_raw_159919.Fields, columns=tmp_raw_159919.Codes).T], axis=0)
     
-    # intm_df_ticker_list = intm_df_ticker_list.append(tmp_df_tickers).sort_values('option_name', ascending=True)
     intm_df_ticker_list = pd.concat([intm_df_ticker_list, tmp_df_tickers], axis=0).sort_values('option_name', ascending=True)
     intm_df_ticker_list['strike_price'] = intm_df_ticker_list['strike_price'].apply(lambda x:round(x,3))
     intm_df_ticker_list = intm_df_ticker_list.drop(columns=['exe_type', 'expiredate', 'settle_method']).drop_duplicates(keep='first')
@@ -808,7 +777,6 @@ def update_trade_states_dayLimit():
     intm_df_price     = ds.read_file('dayLimit')
     intm_df_ticker_st = ds.read_file('st')
     
-    # intm_df_index = ds.read_file('index_close')#.rename(index=lambda x:str_to_time(x))
     intm_df_ticker_date = ds.read_file('ticker_stock')
     intm_list_ticker_GEM_STAR = list(intm_df_ticker_date[intm_df_ticker_date['Board'].isin(['科创板', '创业板'])].index)
     
@@ -833,7 +801,6 @@ def update_trade_states_dayLimit():
             for p in intm_list_ticker_GEM_STAR:
                 tmp_df_price.loc[u,p] = 10000 if (intm_df_ticker_date.loc[p,'DateIPO']<=u and \
                                                   len(intm_df_ticker_st.loc[intm_df_ticker_date.loc[p,'DateIPO']:u,:])<=5) else 20
-            # intm_df_price = intm_df_price.append(tmp_df_price)
             intm_df_price = pd.concat([intm_df_price, tmp_df_price], axis=0)
 
     # ST 股票涨跌停板设为5
@@ -867,7 +834,6 @@ def update_trade_states_st():
             str_time = str(time_to_int(u))
             log_msg("正在提取 %s 的 %s 数据..."%(str_time, str_metric))
             # 注意有三类不同的股票：st类，未上市/已退市，正常交易
-            # tmp_raw_data = w.wset("sectorconstituent","date="+str_time+";sectorid=1000006526000000")
             tmp_raw_data = wind_func_wset(str_metric, str_time, 0)
             tmp_list_st_ticker = [v for v in tmp_raw_data.Data[1] if v[0] in ['0', '3', '6']]
             tmp_list_before_IPO = list(intm_df_ticker_list[intm_df_ticker_list['DateIPO']>u].index)
@@ -878,7 +844,6 @@ def update_trade_states_st():
             data_df_price_update.loc[u,tmp_list_before_IPO+tmp_list_after_delist] = -99
             
         # 读取成功的数据拼贴到原有数据上; 注意新增股票的历史部分是空缺的，需要补上 -99 标记
-        # intm_df_price = df_rows_dedu(intm_df_price.append(data_df_price_update)).fillna(-99)
         intm_df_price = df_rows_dedu(pd.concat([intm_df_price, data_df_price_update], axis=0)).fillna(-99)
         
     # 保存数据
@@ -920,9 +885,6 @@ def update_index_constituent(str_index, str_path):
         tmp_df_weight   = pd.DataFrame(tmp_raw_index_constituent.Data[3], columns=[tmp_dt_date], index=range(len(tmp_raw_index_constituent.Data[3]))).T
         tmp_df_industry = pd.DataFrame(tmp_raw_index_constituent.Data[4], columns=[tmp_dt_date], index=range(len(tmp_raw_index_constituent.Data[4]))).T
 
-        # intm_df_stocks   = df_rows_dedu(intm_df_stocks.append(tmp_df_stocks))
-        # intm_df_weight   = df_rows_dedu(intm_df_weight.append(tmp_df_weight))
-        # intm_df_industry = df_rows_dedu(intm_df_industry.append(tmp_df_industry))
         intm_df_stocks   = df_rows_dedu(pd.concat([intm_df_stocks,   tmp_df_stocks],   axis=0))
         intm_df_weight   = df_rows_dedu(pd.concat([intm_df_weight,   tmp_df_weight],   axis=0))
         intm_df_industry = df_rows_dedu(pd.concat([intm_df_industry, tmp_df_industry], axis=0))
@@ -1005,7 +967,6 @@ def update_minute_option(path_option, path_etf):
     tmp_df_159919 = wind_func_wsi("159919.SZ", str_date_start, str_date_end)
     tmp_df_159919['ticker'] = "159919.OF"
     
-    # tmp_df_price = tmp_df_price.append(tmp_df_510050).append(tmp_df_510300).append(tmp_df_159919)
     tmp_df_price = pd.concat([tmp_df_price, tmp_df_510050, tmp_df_510300, tmp_df_159919], axis=0)
     tmp_df_price.to_csv(path_etf+str(time_to_int(dt_date))+'_minu_etf.csv', encoding='utf_8_sig')
     log_msg("成功保存ETF分钟数据...")
@@ -1014,13 +975,9 @@ def update_minute_option(path_option, path_etf):
 
 # 更新分钟数据
 def update_minute_day(str_security, str_path_in, str_path_out, max_try=200):
-    '''
-    更新分钟数据
-    '''
-    # str_path_in  = "C:/RawData/minute/cb_em/"
-    # str_path_out = "C:/InvestmentResearch/database/minute/cb/"
+    ''' 更新分钟数据 '''
+
     list_files = os.listdir(str_path_out)
-    
     if   str_security == 'cb':
         data_df_amount_stock = ds.read_file("cb_amount")
         tmp_int_vol_rate     = 10
@@ -1040,13 +997,9 @@ def update_minute_day(str_security, str_path_in, str_path_out, max_try=200):
         tmp_df_amount = data_df_amount_stock.iloc[ii]
         tmp_df_amount = tmp_df_amount[tmp_df_amount>0]
         tmp_df_raw_data = pd.read_csv(str_path_in+str_security +'_'+tmp_str_date2+'.csv', low_memory=True, encoding='utf_8_sig').set_index('Unnamed: 0')
-        # tmp_df_raw_data = tmp_df_raw_data.rename(columns={'vol':'volume', 'datetime':'timestamp'})
         tmp_df_raw_data['volume'] = tmp_df_raw_data['lots'] * tmp_int_vol_rate
     
         tmp_df_sign     = tmp_df_raw_data.groupby('ticker').sum()['amount'] - tmp_df_amount
-        # tmp_df_sign_new = pd.Series(dtype=np.float64).append(tmp_df_sign[tmp_df_sign.isnull().values==True])\
-        #                                              .append(tmp_df_sign[tmp_df_sign> 1e4])\
-        #                                              .append(tmp_df_sign[tmp_df_sign<-1e4])
         tmp_df_sign_new = pd.concat([pd.Series(dtype=np.float64), 
                                      tmp_df_sign[tmp_df_sign.isnull().values==True], 
                                      tmp_df_sign[tmp_df_sign> 1e4], 
@@ -1066,7 +1019,6 @@ def update_minute_day(str_security, str_path_in, str_path_out, max_try=200):
                     tmp_df_new_value['volume'] = tmp_df_new_value['volume'] * (10 if (str_security=='cb' and u.split('.')[1]=='SH') else 1)
                     
                     max_try = max_try - 1
-                    # tmp_df_raw_data = tmp_df_raw_data[tmp_df_raw_data.ticker!=u].append(tmp_df_new_value)
                     tmp_df_raw_data = pd.concat([tmp_df_raw_data[tmp_df_raw_data.ticker!=u], tmp_df_new_value], axis=0)
                     log_msg("   > 填充"+u)
     
@@ -1111,9 +1063,6 @@ def update_30minute(str_security, str_path_in, str_path_out):
         tmp_df_minu_cb_amount = df_mapper_clip(data_df_mapping, tmp_df_minu_cb_amount)
     
     # 拼接保存（去掉重复的部分）
-    # intm_df_minu_cb_vwap   = intm_df_minu_cb_vwap.append(  tmp_df_minu_cb_vwap  ).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
-    # intm_df_minu_cb_close  = intm_df_minu_cb_close.append( tmp_df_minu_cb_close ).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
-    # intm_df_minu_cb_amount = intm_df_minu_cb_amount.append(tmp_df_minu_cb_amount).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
     intm_df_minu_cb_vwap   = pd.concat([intm_df_minu_cb_vwap,   tmp_df_minu_cb_vwap],   axis=0).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
     intm_df_minu_cb_close  = pd.concat([intm_df_minu_cb_close,  tmp_df_minu_cb_close],  axis=0).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)
     intm_df_minu_cb_amount = pd.concat([intm_df_minu_cb_amount, tmp_df_minu_cb_amount], axis=0).reset_index().drop_duplicates(subset='index', keep='first').set_index('index').sort_index(ascending=True)

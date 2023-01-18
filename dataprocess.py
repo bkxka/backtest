@@ -26,7 +26,6 @@ pd.set_option('mode.chained_assignment',None)
 # test
 
 ''' 短程序/处理函数 '''
-# filter_weight = lambda x, y:x[x>=y].append(pd.Series(x[x<y].sum(), index=['其他'])) if type(x) == pd.core.series.Series else 0
 filter_weight = lambda x, y:pd.concat([x[x>=y], pd.Series(x[x<y].sum(), index=['其他'])], axis=0) if type(x) == pd.core.series.Series else 0
 
 
@@ -112,7 +111,6 @@ def get_cbs_pool_standard(df_amount_stock, df_amount_cb, df_ticker_cb):
             tmp_date_start  = max(min(tmp_df_amount_stock.index), min(tmp_df_amount_cb.index))
             tmp_date_end    = min(max(tmp_df_amount_stock.index), max(tmp_df_amount_cb.index), 
                                   df_ticker_cb.loc[u, ['DateRedeemNotice', 'InterestDateEnd']].min())
-            # tmp_df_trade_cycle = df_amount_cb[[u]].loc[tmp_date_start:tmp_date_end].applymap(lambda x:1)
             tmp_list_index = [v for v in df_amount_cb.index if (v>=tmp_date_start and v<=tmp_date_end)]
             tmp_df_trade_cycle = df_amount_cb[[u]].loc[tmp_list_index].applymap(lambda x:1)
         tmp_df_cb_pool = pd.concat([tmp_df_cb_pool, tmp_df_trade_cycle], axis=1).fillna(0)
@@ -156,8 +154,6 @@ def get_index_industry_weight(df_index_stocks, df_index_weight, df_industry):
         data_df_index_industry = pd.concat([data_df_index_industry, tmp_df_aggregate.T], axis=0)
 
     # 权重数据重新整理并归一化
-    # data_df_index_industry = data_df_index_industry[[v for v in data_df_index_industry.columns if v[0] not in ['0', '-']]]
-    # data_df_index_industry = (data_df_index_industry.T / data_df_index_industry.sum(axis=1)).T
     data_df_index_industry = data_df_index_industry[[v for v in data_df_index_industry.columns if (v!=0 and v[0] not in ['0', '-'])]]
     data_df_index_industry['其他'] = data_df_index_industry.sum(axis=1).apply(lambda x:max(0, 100-x))
     data_df_index_industry = df_index_norm(data_df_index_industry)
@@ -168,12 +164,6 @@ def get_index_industry_weight(df_index_stocks, df_index_weight, df_industry):
 # 将少量截面数据转变成全周期时序数据
 def cross_to_sequence(list_tradingDays, data_df_industry_raw):
     ''' 将少量截面数据转变成全周期时序数据 '''
-    
-    # intm_df_industry = pd.DataFrame(0, index=list_tradingDays, columns=data_df_industry_raw.columns)
-    # for u in data_df_industry_raw.index:
-    #     for q in data_df_industry_raw.columns:
-    #         intm_df_industry.loc[intm_df_industry.index>u, q] = data_df_industry_raw.loc[u, q]
-    # intm_df_industry = intm_df_industry.loc[intm_df_industry.index>=data_df_industry_raw.index[0]]
     
     intm_df_industry = pd.DataFrame()
     tmp_df_date = pd.DataFrame(data_df_industry_raw.index)
@@ -191,39 +181,7 @@ def cross_to_sequence(list_tradingDays, data_df_industry_raw):
     return intm_df_industry
 
 
-# # 将结构化的股票成分-权重数据转化成股票权重二维表
-# def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_close_cb):
-#     ''' 将结构化的股票成分-权重数据转化成股票权重二维表 '''
-    
-    # if (list(data_df_index_stocks.index) != list(data_df_index_weight.index))\
-    #     or (list(data_df_index_stocks.columns) != list(data_df_index_weight.columns)):
-    #     print(">>> wrong data imput ...")
-    #     return None
-
-    # data_df_index_constitution = pd.DataFrame()
-    # for u in data_df_index_weight.index:
-    #     tmp_df_cons = pd.concat([data_df_index_stocks.loc[u].to_frame().rename(columns={u:0}), data_df_index_weight.loc[u]], axis=1).dropna().set_index(0)
-    #     # data_df_index_constitution = data_df_index_constitution.append(tmp_df_cons.T).fillna(0)
-    #     data_df_index_constitution = pd.concat([data_df_index_constitution, tmp_df_cons.T], axis=0).fillna(0)
-        
-    # tmp_df_index_constitution = cross_to_sequence(list(data_df_close_cb.index), data_df_index_constitution)
-
-    # # 将权重股重新组织成二维表的标准形式
-    # data_df_index_constitution = pd.DataFrame()
-    # for u in data_df_close_cb.columns:
-    #     data_df_index_constitution = pd.concat([data_df_index_constitution, 
-    #                                             tmp_df_index_constitution[[u]] if u in tmp_df_index_constitution.columns else pd.DataFrame(columns=[u])], axis=1)
-    # # 根据转债价格变动校正指数权重
-    # tmp_u = data_df_index_constitution.index[0]
-    # for u in data_df_index_constitution.index:
-    #     if u in data_df_index_stocks.index:
-    #         tmp_u = u
-    #     else:
-    #         data_df_index_constitution.loc[u] = data_df_index_constitution.loc[u] * (data_df_close_cb.loc[u] / data_df_close_cb.loc[tmp_u])
-    # data_df_index_constitution = df_index_norm(data_df_index_constitution).replace([np.inf, -np.inf, np.nan], 0)
-
-    # return data_df_index_constitution
-    
+# 将结构化的股票成分-权重数据转化成股票权重二维表
 def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_dayReturn):
     ''' 将结构化的股票成分-权重数据转化成股票权重二维表 '''
     
@@ -232,13 +190,11 @@ def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_d
         tmp_today   = data_df_index_composition.index[ii]
         tmp_lastday = data_df_index_composition.index[ii-1]
         try:
-            # tmp_df = pd.Series(data_df_index_weight.loc[tmp_today].values, index=data_df_index_stocks.loc[tmp_today]).dropna()
             tmp_df = pd.concat([data_df_index_stocks.loc[tmp_today], data_df_index_weight.loc[tmp_today]], axis=1).dropna()
             tmp_df.columns = [0, 1]
             tmp_df = tmp_df.groupby(0).sum()[1]
             tmp_df = tmp_df.loc[[v for v in tmp_df.index if v[0]!='T']]
             data_df_index_composition.loc[tmp_today, tmp_df.index] = tmp_df
-            # print(tmp_today)
         except:
             data_df_index_composition.loc[tmp_today] = data_df_index_composition.loc[tmp_lastday] * (1 + data_df_dayReturn.loc[tmp_today])
     data_df_index_composition = df_index_norm(data_df_index_composition.fillna(0)).dropna()
@@ -248,8 +204,6 @@ def get_index_constitution(data_df_index_stocks, data_df_index_weight, data_df_d
 # 获取调仓日列表
 def select_tradingDays(list_days, dt_start, int_period, int_cut):
     ''' 获取调仓日列表 '''
-    # list_newdays = [v for v in list_days if v>=dt_start]
-    # list_newdays = [list_newdays[ii] for ii in range(len(list_newdays)) if ii%int_period==int_cut]
     return list_interval([v for v in list_days if v>=dt_start], int_period, int_cut)
 
 
@@ -316,7 +270,6 @@ def func_target_position_day_branch_1(u, df_target_industry, df_stockPool, df_in
         elif method=='fmcWeight':
             tmp_df_stocks_selected['weight'] = tmp_df_stocks_selected['floatmktcap'] / tmp_df_stocks_selected['floatmktcap'].sum()
                     
-        # stgy_df_target_position.loc[list(tmp_df_stocks_selected.index)] = tmp_df_stocks_selected['weight']
     else:
         # 有行业权重控制
         tmp_df_industry = filter_weight(df_target_industry.loc[u], flt_floor).to_frame().rename(columns={0:'weight'})
@@ -346,7 +299,6 @@ def func_target_position_day_branch_1(u, df_target_industry, df_stockPool, df_in
                     tmp_df_stocks_compare['weight'] = tmp_df_stocks_compare['weight'] * tmp_fmc
                         
                 tmp_df_stocks_compare['industry'] = q
-                # tmp_df_stocks_selected = tmp_df_stocks_selected.append(tmp_df_stocks_compare)
                 tmp_df_stocks_selected = pd.concat([tmp_df_stocks_selected, tmp_df_stocks_compare], axis=0)
     
     stgy_df_target_position.loc[list(tmp_df_stocks_selected.index)] = tmp_df_stocks_selected['weight']
@@ -372,13 +324,11 @@ def func_target_position_day_branch_2(u, df_target_industry, df_stockPool, df_in
         elif method=='fmcWeight':
             tmp_df_stocks_selected['weight'] = tmp_df_stocks_selected['floatmktcap'] / tmp_df_stocks_selected['floatmktcap'].sum()
                     
-        # stgy_df_target_position.loc[list(tmp_df_stocks_selected.index)] = tmp_df_stocks_selected['weight']
     else:
         # 有行业权重控制
         pass
     
     stgy_df_target_position.loc[list(tmp_df_stocks_selected.index)] = tmp_df_stocks_selected['weight']
-    
     return stgy_df_target_position
 
 
@@ -416,7 +366,6 @@ def get_df_slices(df_scores, df_stock_pool, int_layers, int_signal=1):
     默认信号延迟一天：即当天尾盘按照昨日收盘信息调仓；int_signal=0表示按照当天收盘信息调仓
     '''
     dict_result = {v:pd.DataFrame(0, index=df_stock_pool.index, columns=df_stock_pool.columns) for v in range(int_layers)}
-    # for u in list_dates_signal:
     for u in df_scores.index:
         tmp_df_pool = df_stock_pool.loc[u][df_stock_pool.loc[u]>0]                      # 选取股票池中可选股票
         tmp_df_rank = df_scores.loc[u, tmp_df_pool.index].sort_values(ascending=True)   # 将当天股票池中股票按照分值排序

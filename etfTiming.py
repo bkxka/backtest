@@ -15,7 +15,6 @@ import math
 def get_target_close(set_str_target, set_str_index, data_df_etf_close, data_df_index_close, set_dt_begin_date):
     ''' 根据跟踪指数和交易标的，获取交易标的的收盘价数据 '''
 
-    # intm_list_etf = list(data_df_etf_list[data_df_etf_list['跟踪指数']==set_str_index].index)
     if set_str_target==set_str_index:
         intm_df_target_close = data_df_index_close[set_str_index]
     else:
@@ -87,7 +86,6 @@ def get_trade_simulate(stgy_df_shszhk_francktile, intm_df_target_close, set_flt_
     intm_df_trade_record['tradeAmount'] = intm_df_trade_record['etfValue'] - intm_df_trade_record['etfValue'].shift(1) * (1 + intm_df_trade_record['dayReturn']/100)
     intm_df_trade_record['tradeAmount'] = intm_df_trade_record['tradeAmount'].fillna(0).abs() / intm_df_trade_record['netvalueRaw']
     intm_df_trade_record['tradeCost']   = intm_df_trade_record['tradeAmount'] * set_flt_fee
-    
     
     # 计算扣除成本后的净值曲线
     intm_df_trade_record['costAdjFactor'] = (1 - intm_df_trade_record['tradeCost']).cumprod()

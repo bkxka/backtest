@@ -161,7 +161,6 @@ def read_minute_data(str_path, list_ticker, list_date, list_timesep):
             tmp_df_cb_sum['avg_price'] = tmp_df_cb_sum['amount'] / tmp_df_cb_sum['volume']
             tmp_df_cb_sum              = tmp_df_cb_sum[['amount', 'avg_price']]
             tmp_df_cb_sum['close']     = tmp_df_cb['close'].loc[tmp_df_cb_sum.index]
-            # tmp_df_cb_sum              = tmp_df_cb_sum.iloc[:-1]
             
             data_df_cb_close_minu    = pd.concat([data_df_cb_close_minu,    tmp_df_cb_sum[['close']].rename(    columns={'close':    u})], axis=1)
             data_df_cb_avgprice_minu = pd.concat([data_df_cb_avgprice_minu, tmp_df_cb_sum[['avg_price']].rename(columns={'avg_price':u})], axis=1)

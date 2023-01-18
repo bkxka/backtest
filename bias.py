@@ -48,8 +48,6 @@ def analysis_bias_etf(data_df_delivery_etf, data_df_orders_etf):
 def analysis_netvalue_etf(df_netvalue_backtest, df_price_close, str_etf_ticker, aly_df_bias_trade_etf, data_df_orders_etf, df_index):
     ''' 比较回测与实盘交易的净值曲线 '''
     
-    # aly_df_netvalue = stgETF.result_df_netvalue.copy(deep=True).loc[min(data_df_orders_etf.index):].rename(columns={str_etf_ticker:'backtest_netvalue'})
-    # aly_df_netvalue['price'] = ds.read_file('etf_close').loc[aly_df_netvalue.index, str_etf_ticker]
     aly_df_netvalue = df_netvalue_backtest.loc[min(data_df_orders_etf.index):].rename(columns={str_etf_ticker:'backtest_netvalue'})
     aly_df_netvalue['price'] = df_price_close.loc[aly_df_netvalue.index, str_etf_ticker]
     aly_df_netvalue['index_close'] = df_index.loc[min(data_df_orders_etf.index):]
@@ -67,7 +65,6 @@ def analysis_netvalue_etf(df_netvalue_backtest, df_price_close, str_etf_ticker, 
     aly_df_netvalue['netvalue_backtest'] = aly_df_netvalue['backtest_netvalue'] / aly_df_netvalue['backtest_netvalue'].iloc[0]
     aly_df_netvalue['netvalue_trade']    = aly_df_netvalue['trade_netvalue']    / aly_df_netvalue['trade_netvalue'].iloc[0]
     aly_df_netvalue['close_index']       = aly_df_netvalue['index_close']       / aly_df_netvalue['index_close'].iloc[0]
-    # aly_df_netvalue['excess_return']     = aly_df_netvalue['netvalue_trade']    - aly_df_netvalue['close_index']
 
     return aly_df_netvalue
 
@@ -80,10 +77,8 @@ def get_orders_cx(str_path_order, str_cx_ah):
     data_df_orders_cx_ah = pd.DataFrame()
     for u in list_orders:
         if str_cx_ah in u:
-            # data_df_orders_cx_ah = data_df_orders_cx_ah.append(pd.read_csv(str_path_order+u, encoding='utf_8_sig'))
             data_df_orders_cx_ah = pd.concat([data_df_orders_cx_ah, pd.read_csv(str_path_order+u, encoding='utf_8_sig')], axis=0)
     data_df_orders_cx_ah['date'] = data_df_orders_cx_ah['orderTime'].apply(lambda x:str_to_time(x))
-    # data_df_orders_cx_ah['date'] = data_df_orders_cx_ah['orderTime'].apply(lambda x:str_to_time(x.split(' ')[0]))
     data_df_orders_cx_ah.rename(columns={'Unnamed: 0':'ticker'}, inplace=True)
     data_df_orders_cx_ah['ticker'] = data_df_orders_cx_ah['ticker'].apply(lambda x:int(x.split('.')[0]))
     data_df_orders_cx_ah = data_df_orders_cx_ah[data_df_orders_cx_ah['netbuy']!=0]
@@ -146,8 +141,6 @@ def analysis_bias_cx(data_df_orders_cx_ah, data_df_delivery_cx_ah):
     # 注意，卖出交割金额（负数）大于卖出指令金额（负数），即金额绝对值偏少，冲击成本为正
     aly_df_bias_trade_cx['tradeSlide'] = aly_df_bias_trade_cx['buy_delivery']  - aly_df_bias_trade_cx['buy_order']\
                                        + aly_df_bias_trade_cx['sell_delivery'] - aly_df_bias_trade_cx['sell_order']
-    # aly_df_bias_trade_cx['tradeSlide'] = aly_df_bias_trade_cx['buy_delivery'] - aly_df_bias_trade_cx['buy_order']\
-    #                                    + aly_df_bias_trade_cx['sell_order']   - aly_df_bias_trade_cx['sell_delivery']  
     aly_df_bias_trade_cx['tradeCost']  = aly_df_bias_trade_cx['tradeSlide'] + aly_df_bias_trade_cx['fee']
 
     return aly_df_bias_trade_cx
@@ -198,7 +191,6 @@ def analysis_netvalue_cx(df_netvalue_backtest, data_df_price, aly_df_bias_trade_
     aly_df_netvalue_cx['netvalue_backtest'] = aly_df_netvalue_cx['backtest_netvalue'] / aly_df_netvalue_cx['backtest_netvalue'].iloc[0]
     aly_df_netvalue_cx['netvalue_trade']    = aly_df_netvalue_cx['trade_netvalue']    / aly_df_netvalue_cx['trade_netvalue'].iloc[0]
     aly_df_netvalue_cx['close_index']       = aly_df_netvalue_cx['index_close']       / aly_df_netvalue_cx['index_close'].iloc[0]
-    # aly_df_netvalue_cx['excess_return']     = aly_df_netvalue_cx['netvalue_trade']    - aly_df_netvalue_cx['close_index']
 
     return aly_df_netvalue_cx
 
@@ -220,9 +212,6 @@ def analysis_cut(aly_df_netvalue_cx, list_date_cut):
 
 def plot_stack_line(df_data, list_lines, list_stacks, str_path, str_title):
     ''' 绘制面积图和折线图 '''
-    # df_data = aly_df_netvalue.iloc[:,-4:]
-    # list_lines = ['netvalue_backtest', 'netvalue_trade', 'close_index']
-    # list_stacks = ['excess_return']
     
     list_lightcolor = ['lightskyblue', 'lightsalmon', 'lightsage', 'lightgray']
     list_darkcolor  = ['limegreen', 'indianred', 'violet', 'yellowgreen', 'dimgray', 'deepskyblue', 'magenta']

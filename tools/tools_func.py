@@ -155,7 +155,6 @@ def df_cut_sum(df_data, list_sep):
     df_result = pd.DataFrame(columns=df_data.columns)
     for u in list_sep:
         tmp_df      = tmp_df_data.loc[:u]
-        # df_result   = df_result.append(pd.DataFrame(tmp_df.sum(axis=0).rename(u, inplace=True)).T)
         df_result   = pd.concat([df_result, pd.DataFrame(tmp_df.sum(axis=0).rename(u, inplace=True)).T], axis=0)
         try:
             tmp_df_data = tmp_df_data.loc[u:].iloc[1:]
@@ -163,7 +162,6 @@ def df_cut_sum(df_data, list_sep):
             break
         
     if len(tmp_df_data)>0:
-        # df_result   = df_result.append(pd.DataFrame(tmp_df_data.sum(axis=0).rename(tmp_df_data.index[-1], inplace=True)).T)
         df_result   = pd.concat([df_result, pd.DataFrame(tmp_df_data.sum(axis=0).rename(tmp_df_data.index[-1], inplace=True)).T], axis=0)
     
     return df_result

@@ -37,7 +37,6 @@ if True:
     par_str_path_report = par_str_path + '/report/'
     par_str_path_market = par_str_path + '/market/'
     par_str_path_minute = par_str_path + '/minute/temp/'
-    # par_str_path_bulletin = par_str_path + '/bulletin/'
     par_str_path_option = par_str_path + '/option/'
     par_str_path_moneyflow = par_str_path_price + 'moneyflow/'
 
@@ -88,8 +87,7 @@ def read_file(str_metric):
                              .replace([0, '0', '--', '---', '----'], np.nan)
             intm_df_file = df_index_time(intm_df_file)
             
-        elif str_metric in ['analyst_forecast', 'bonus', 'insiderTrade']\
-        or   'ticker' in str_metric:
+        elif str_metric in ['analyst_forecast', 'bonus', 'insiderTrade'] or 'ticker' in str_metric:
 
             intm_df_file = pd.read_csv(max(list_files_cand), index_col=0, encoding='utf_8_sig', low_memory=False)
             list_column_dates = []
@@ -113,16 +111,12 @@ def read_file(str_metric):
             intm_df_file[list_column_dates] = intm_df_file[list_column_dates].applymap(lambda x:str_to_time(x) if type(x)==str else x)
 
         elif 'minu' in str_metric:
-
             intm_df_file = pd.read_csv(max(list_files_cand), index_col=0, encoding='utf_8_sig')
             intm_df_file = intm_df_file.rename(index=lambda x:dt.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
             
-        # elif 'cb' in str_metric:
         else:
-            
             intm_df_file = pd.read_csv(max(list_files_cand), index_col=0, encoding='utf_8_sig')
             intm_df_file = df_index_time(intm_df_file)
-            
 
         return intm_df_file
     
@@ -202,19 +196,6 @@ def load_industry(str_metric, str_split='-'):
     return [tmp1, tmp2, tmp3, tmp4] 
 
 
-# # 将少量截面数据转变成全周期时序数据
-# def cross_to_sequence(list_tradingDays, data_df_industry_raw):
-#     ''' 将少量截面数据转变成全周期时序数据 '''
-    
-#     intm_df_industry = pd.DataFrame(0, index=list_tradingDays, columns=data_df_industry_raw.columns)
-#     for u in data_df_industry_raw.index:
-#         for q in data_df_industry_raw.columns:
-#             intm_df_industry.loc[intm_df_industry.index>u, q] = data_df_industry_raw.loc[u, q]
-#     intm_df_industry = intm_df_industry.loc[intm_df_industry.index>=data_df_industry_raw.index[0]]
-        
-#     return intm_df_industry
-
-
 # 读取分钟数据
 def read_minutes_price(str_path, str_ticker):
     ''' 读取分钟数据 '''
@@ -256,7 +237,6 @@ def read_minute_data(str_path, list_ticker, list_date, list_timesep):
         print(">>> processing", u, str_hours(2))
         tmp_df_minute = pd.read_csv(str_path+str(time_to_int(u))+'.csv', encoding='utf_8_sig').iloc[:,1:]
         tmp_df_minute = tmp_df_minute[tmp_df_minute['ticker'].isin(list_ticker)]
-        # data_df_stock_minute = data_df_stock_minute.append(tmp_df_minute)
         data_df_stock_minute = pd.concat([data_df_stock_minute, tmp_df_minute], axis=0)
 
     data_df_stock_minute['timestamp'] = data_df_stock_minute['timestamp'].apply(lambda x:dt.datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
@@ -269,7 +249,6 @@ def read_minute_data(str_path, list_ticker, list_date, list_timesep):
     
     for u in list_ticker:
         try:
-            # print(">>> processing", u, str_hours(2))
             # 读取原始的分钟级数据，并将空缺的分钟线填补上收盘价数据
             # 需要注意，此处 tmp_df_cb 是股票/转债的分钟数据，源数据混杂了wind/taobao/eastmoney数据源
             tmp_df_cb = data_df_stock_minute[data_df_stock_minute.ticker==u].set_index('timestamp').sort_index(ascending=True)
@@ -330,7 +309,6 @@ def read_statement_ttm(metric, sheet, file_path, date_type='reportDate'):
         for u in l_targ:
             m_targ = u if len(u)<len(m_targ) else m_targ
         
-    # slice = pd.concat([df.iloc[4:6,:].T, df[df[0]==m_targ].T, df[df[0]==m_date].T], axis=1).set_index(4)
     slice = pd.concat([df.iloc[4:6,:], df[df[0]==m_targ], df[df[0]==m_date]], axis=0)
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
@@ -357,12 +335,6 @@ def read_statement_ttm(metric, sheet, file_path, date_type='reportDate'):
     
     # 不要使用annouceDate，因为wind导出的报表中的披露日期信息有误
     return slice, df
-    # if date_type == 'annouceDate':
-    #     return slice.set_index(m_date), df
-    # elif date_type == 'reportDate':
-    #     return slice, df
-    # else:
-    #     return None, None
     
     
     

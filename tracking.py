@@ -46,9 +46,6 @@ def read_prev_orders(str_path, str_file):
     else:
         str_file_latest = max(list_files_qualified)
         tmp_file = pd.read_csv(str_path+str_file_latest, index_col=0, encoding='utf_8_sig')
-        # 20210701
-        # tmp_file = tmp_file[['position_new', 'hold_new', 'surplus']]
-        # tmp_file = tmp_file[tmp_file['hold_new']>0].dropna().rename(columns={"position_new":"position_old", "hold_new":"hold_old", "surplus":"surplus"})
         return tmp_file
         
 
@@ -59,8 +56,6 @@ def get_trade_order(stgy_df_order_last, stgy_df_order_new, flt_totalAsset, path,
     if stgy_df_order_last is None:
         df_result = stgy_df_order_new.copy(deep=True)
     else:
-        # 20210701
-        # df_result = pd.concat([stgy_df_order_last, stgy_df_order_new], axis=1).fillna(0)
         tmp_file = stgy_df_order_last[['position_new', 'hold_new', 'surplus']]
         tmp_file = tmp_file[tmp_file['hold_new']>0].dropna().rename(columns={"position_new":"position_old", "hold_new":"hold_old", "surplus":"surplus"})
         df_result = pd.concat([tmp_file, stgy_df_order_new], axis=1).fillna(0)
@@ -71,7 +66,6 @@ def get_trade_order(stgy_df_order_last, stgy_df_order_new, flt_totalAsset, path,
     else:
         df_result['totalAsset'] = (df_result['price_new'] * df_result['hold_old']).sum() + df_result['surplus'].iloc[0]
 
-    # df_result['price_new'] = [em.get_price_realtime(x) for x in df_result.index]
     df_result['value_new'] = df_result['totalAsset'] * df_result['position_new']
     df_result['hold_new'] = (df_result['value_new'] / df_result['price_new']).apply(lambda x:round(x/int_lot)*int_lot)
 
